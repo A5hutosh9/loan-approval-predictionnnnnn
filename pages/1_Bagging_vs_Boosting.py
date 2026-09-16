@@ -1,14 +1,9 @@
 import streamlit as st
 import pandas as pd
-import numpy as np
 import matplotlib.pyplot as plt
 
 from utils import load_repository_dataset, show_dataset_expander
 
-
-# =========================================================
-# PAGE CONFIG
-# =========================================================
 
 st.set_page_config(
     page_title="Bagging vs Boosting",
@@ -17,87 +12,120 @@ st.set_page_config(
 )
 
 
-# =========================================================
-# DATASET
-# =========================================================
-
-df = load_repository_dataset()
-
-
-# =========================================================
-# TITLE
-# =========================================================
-
 st.title("📊 Bagging vs Boosting")
 
-st.write(
+st.markdown(
     """
-    Comparison of ensemble learning methods used for
-    loan approval prediction.
+    Comparison of ensemble learning techniques used in the
+    Loan Approval Prediction project.
     """
 )
 
 
-# Dataset expandable section
-show_dataset_expander(df)
-
-
-st.divider()
-
-
-# =========================================================
+# ==========================================================
 # BAGGING
-# =========================================================
+# ==========================================================
 
-col1, col2 = st.columns(2)
+st.header("🟦 Bagging")
 
+st.markdown(
+    """
+    **Bagging (Bootstrap Aggregating)** trains multiple models
+    independently on different bootstrap samples of the dataset.
+
+    The final prediction is obtained by combining the predictions
+    of the individual models.
+    """
+)
+
+col1, col2, col3 = st.columns(3)
 
 with col1:
-
-    st.header("🌳 Bagging")
-
-    st.write(
-        """
-        Bagging trains multiple models independently and combines
-        their predictions to reduce variance.
-        """
-    )
-
-    st.write("**Models:**")
-
-    st.write("• Bagging")
-    st.write("• Random Forest")
-
+    st.metric("Training Strategy", "Parallel")
 
 with col2:
+    st.metric("Main Idea", "Reduce Variance")
 
-    st.header("🚀 Boosting")
-
-    st.write(
-        """
-        Boosting trains models sequentially, with later models
-        focusing on errors made by earlier models.
-        """
-    )
-
-    st.write("**Models:**")
-
-    st.write("• AdaBoost")
-    st.write("• Gradient Boosting")
+with col3:
+    st.metric("Project Model", "Bagging")
 
 
-st.divider()
+# ==========================================================
+# BOOSTING
+# ==========================================================
+
+st.header("🟩 Boosting")
+
+st.markdown(
+    """
+    **Boosting** builds models sequentially.
+
+    Each new model focuses more on the errors made by previous
+    models, gradually improving the overall prediction.
+    """
+)
+
+col1, col2, col3 = st.columns(3)
+
+with col1:
+    st.metric("Training Strategy", "Sequential")
+
+with col2:
+    st.metric("Main Idea", "Reduce Errors")
+
+with col3:
+    st.metric("Project Models", "AdaBoost / GB")
 
 
-# =========================================================
-# MODEL RESULTS
-# =========================================================
+# ==========================================================
+# DIFFERENCE
+# ==========================================================
 
-st.header("Model Performance Comparison")
+st.header("⚖️ Key Difference")
 
+comparison = pd.DataFrame({
+    "Feature": [
+        "Training",
+        "Main Goal",
+        "Model Relationship",
+        "Examples"
+    ],
+
+    "Bagging": [
+        "Parallel",
+        "Reduce variance",
+        "Independent",
+        "Bagging, Random Forest"
+    ],
+
+    "Boosting": [
+        "Sequential",
+        "Improve errors",
+        "Dependent",
+        "AdaBoost, Gradient Boosting"
+    ]
+})
+
+st.table(comparison)
+
+
+# ==========================================================
+# DATASET
+# ==========================================================
+
+df = load_repository_dataset()
+
+if df is not None:
+    show_dataset_expander(df, "📁 Dataset")
+
+
+# ==========================================================
+# CROSS VALIDATION RESULTS
+# ==========================================================
+
+st.header("📈 5-Fold Cross-Validation Results")
 
 results = pd.DataFrame({
-
     "Model": [
         "Decision Tree",
         "Bagging",
@@ -131,166 +159,138 @@ results = pd.DataFrame({
     ]
 })
 
-
-display_results = results.copy()
-
-
-for column in [
-    "Validation Accuracy",
-    "Validation F1",
-    "Validation ROC-AUC"
-]:
-
-    display_results[column] = (
-        display_results[column] * 100
-    ).round(2).astype(str) + "%"
-
-
 st.dataframe(
-    display_results,
-    use_container_width=True,
-    hide_index=True
+    results.style.format({
+        "Validation Accuracy": "{:.4f}",
+        "Validation F1": "{:.4f}",
+        "Validation ROC-AUC": "{:.4f}"
+    }),
+    use_container_width=True
 )
 
 
-st.caption(
-    "Results from the project's 5-fold stratified cross-validation."
-)
+# ==========================================================
+# ACCURACY CHART
+# ==========================================================
 
+st.header("📊 Validation Accuracy")
 
-st.divider()
-
-
-# =========================================================
-# ACCURACY
-# =========================================================
-
-st.header("Accuracy Comparison")
-
-
-fig, ax = plt.subplots(
-    figsize=(10, 5)
-)
-
+fig, ax = plt.subplots(figsize=(9, 5))
 
 ax.bar(
     results["Model"],
     results["Validation Accuracy"]
 )
 
-
+ax.set_ylim(0.90, 1.00)
 ax.set_ylabel("Accuracy")
+ax.set_xlabel("Model")
+ax.set_title("Validation Accuracy Comparison")
 
-ax.set_ylim(
-    0.90,
-    1.02
-)
-
-ax.set_title(
-    "Validation Accuracy"
-)
-
-ax.tick_params(
-    axis="x",
-    rotation=20
-)
-
-ax.grid(
-    axis="y",
-    alpha=0.3
-)
-
+plt.xticks(rotation=20)
+plt.tight_layout()
 
 st.pyplot(fig)
 
-plt.close(fig)
 
+# ==========================================================
+# F1 CHART
+# ==========================================================
 
-# =========================================================
-# F1
-# =========================================================
+st.header("📊 Validation F1-Score")
 
-st.header("F1 Score Comparison")
-
-
-fig, ax = plt.subplots(
-    figsize=(10, 5)
-)
-
+fig, ax = plt.subplots(figsize=(9, 5))
 
 ax.bar(
     results["Model"],
     results["Validation F1"]
 )
 
-
+ax.set_ylim(0.90, 1.00)
 ax.set_ylabel("F1 Score")
+ax.set_xlabel("Model")
+ax.set_title("Validation F1 Comparison")
 
-ax.set_ylim(
-    0.90,
-    1.02
-)
-
-ax.set_title(
-    "Validation F1 Score"
-)
-
-ax.tick_params(
-    axis="x",
-    rotation=20
-)
-
-ax.grid(
-    axis="y",
-    alpha=0.3
-)
-
+plt.xticks(rotation=20)
+plt.tight_layout()
 
 st.pyplot(fig)
 
-plt.close(fig)
 
+# ==========================================================
+# ROC-AUC CHART
+# ==========================================================
 
-# =========================================================
-# ROC-AUC
-# =========================================================
+st.header("📊 Validation ROC-AUC")
 
-st.header("ROC-AUC Comparison")
-
-
-fig, ax = plt.subplots(
-    figsize=(10, 5)
-)
-
+fig, ax = plt.subplots(figsize=(9, 5))
 
 ax.bar(
     results["Model"],
     results["Validation ROC-AUC"]
 )
 
-
+ax.set_ylim(0.90, 1.00)
 ax.set_ylabel("ROC-AUC")
+ax.set_xlabel("Model")
+ax.set_title("Validation ROC-AUC Comparison")
 
-ax.set_ylim(
-    0.90,
-    1.02
-)
-
-ax.set_title(
-    "Validation ROC-AUC"
-)
-
-ax.tick_params(
-    axis="x",
-    rotation=20
-)
-
-ax.grid(
-    axis="y",
-    alpha=0.3
-)
-
+plt.xticks(rotation=20)
+plt.tight_layout()
 
 st.pyplot(fig)
 
-plt.close(fig)
+
+# ==========================================================
+# GENERALIZATION GAP
+# ==========================================================
+
+st.header("🔎 Generalization Gap")
+
+gap_data = pd.DataFrame({
+    "Model": [
+        "Decision Tree",
+        "Bagging",
+        "Random Forest",
+        "AdaBoost",
+        "Gradient Boosting"
+    ],
+
+    "Accuracy Gap": [
+        0.0218,
+        0.0157,
+        0.0204,
+        0.0066,
+        0.0156
+    ],
+
+    "F1 Gap": [
+        0.0175,
+        0.0125,
+        0.0163,
+        0.0054,
+        0.0125
+    ],
+
+    "ROC-AUC Gap": [
+        0.0229,
+        0.0025,
+        0.0033,
+        0.0016,
+        0.0018
+    ]
+})
+
+st.dataframe(
+    gap_data.style.format({
+        "Accuracy Gap": "{:.4f}",
+        "F1 Gap": "{:.4f}",
+        "ROC-AUC Gap": "{:.4f}"
+    }),
+    use_container_width=True
+)
+
+
+st.info(
+    "The gap is calculated as Training Score − Validation Score."
+)
