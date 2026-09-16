@@ -20,25 +20,39 @@ df = load_repository_dataset()
 # SIDEBAR
 # -----------------------------
 
-st.sidebar.title("🏦 Loan Approval")
-
-st.sidebar.markdown("---")
-
-st.sidebar.info(
-    """
-    **Machine Learning Project**
-
-    Loan Approval Prediction:
-    Bagging vs Boosting
-    
 st.sidebar.markdown(
-    '<p style="color:#D4A017; font-size:18px; font-weight:600;">By- Ashutosh Paltasingh</p>',
-    unsafe_allow_html=True
-
-
     """
-)
+    <div style="
+        background-color:#2f4a67;
+        padding:20px;
+        border-radius:10px;
+    ">
+        <h3 style="color:#2196F3; margin-top:0;">
+            Machine Learning Project
+        </h3>
 
+        <p style="
+            color:#2196F3;
+            font-size:18px;
+            line-height:1.6;
+            margin-bottom:12px;
+        ">
+            Loan Approval Prediction:<br>
+            Bagging vs Boosting
+        </p>
+
+        <p style="
+            color:#B8860B;
+            font-size:17px;
+            font-weight:600;
+            margin-bottom:0;
+        ">
+            By- Ashutosh Paltasingh
+        </p>
+    </div>
+    """,
+    unsafe_allow_html=True
+)
 
 
 # -----------------------------
