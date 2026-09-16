@@ -30,6 +30,10 @@ st.sidebar.info(
 
     Loan Approval Prediction:
     Bagging vs Boosting
+    st.sidebar.markdown("---")
+
+
+    
     By- Ashutosh Paltasingh
     """
 )
