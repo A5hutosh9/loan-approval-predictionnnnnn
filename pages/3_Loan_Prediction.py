@@ -363,7 +363,14 @@ if predict_button:
     try:
 
         # Read API key from Streamlit Secrets
-        api_key = st.secrets["OPENAI_API_KEY"]
+        api_key = st.secrets["streamlit
+scikit-learn==1.6.1
+numpy==2.1.3
+pandas==2.2.3
+joblib==1.6.0
+matplotlib
+shap
+openai"]
 
         client = OpenAI(
             api_key=api_key
