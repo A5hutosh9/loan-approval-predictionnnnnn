@@ -1,11 +1,6 @@
 import streamlit as st
-
 from utils import load_repository_dataset, show_dataset_expander
 
-
-# =========================================================
-# PAGE CONFIG
-# =========================================================
 
 st.set_page_config(
     page_title="Loan Approval Prediction",
@@ -14,152 +9,143 @@ st.set_page_config(
 )
 
 
-# =========================================================
+# -----------------------------
 # LOAD DATASET
-# =========================================================
+# -----------------------------
 
 df = load_repository_dataset()
 
 
-# =========================================================
-# HOME PAGE
-# =========================================================
+# -----------------------------
+# SIDEBAR
+# -----------------------------
 
-st.title("🏦 Loan Approval Prediction: Bagging vs Boosting")
+st.sidebar.title("🏦 Loan Approval")
 
-st.subheader(
-    "Ensemble Learning Based Loan Approval System"
+st.sidebar.markdown("---")
+
+st.sidebar.info(
+    """
+    **Machine Learning Project**
+
+    Loan Approval Prediction:
+    Bagging vs Boosting
+    """
 )
 
-st.write(
+st.sidebar.markdown("---")
+
+st.sidebar.markdown(
     """
-    This project compares Bagging and Boosting ensemble learning
-    techniques for loan approval prediction. It evaluates multiple
-    machine learning models using Accuracy, F1 Score and ROC-AUC.
+    ### Navigation
+
+    Use the pages on the left to explore:
+
+    - Bagging vs Boosting
+    - Run Experiment
+    - Loan Prediction
+    - Explain Prediction
+    - Fairness Analysis
     """
 )
 
-st.divider()
+
+# -----------------------------
+# HOME
+# -----------------------------
+
+st.title("🏦 Loan Approval Prediction")
+
+st.subheader("Bagging vs Boosting")
+
+st.markdown(
+    """
+    This project uses machine learning ensemble techniques to predict
+    whether a loan application will be **Approved** or **Rejected**.
+    """
+)
 
 
-# =========================================================
+# -----------------------------
 # PROJECT OVERVIEW
-# =========================================================
+# -----------------------------
 
-st.header("Project Overview")
+st.markdown("## 📌 Project Overview")
 
-col1, col2, col3 = st.columns(3)
+col1, col2, col3, col4 = st.columns(4)
 
-with col1:
-    st.metric(
-        "Models Compared",
-        "5"
-    )
+if df is not None:
 
-with col2:
-    st.metric(
-        "Validation",
-        "5-Fold CV"
-    )
+    with col1:
+        st.metric("Dataset Rows", f"{df.shape[0]:,}")
 
-with col3:
+    with col2:
+        st.metric("Features", df.shape[1] - 2)
 
-    if df is not None:
-        st.metric(
-            "Dataset Rows",
-            df.shape[0]
-        )
-    else:
-        st.metric(
-            "Dataset Rows",
-            "N/A"
-        )
+    with col3:
+        st.metric("Approved", "2,656")
+
+    with col4:
+        st.metric("Rejected", "1,613")
 
 
-st.write(
+# -----------------------------
+# OBJECTIVE
+# -----------------------------
+
+st.markdown("## 🎯 Objective")
+
+st.markdown(
     """
-    The project uses a Decision Tree as the baseline and compares
-    Bagging, Random Forest, AdaBoost and Gradient Boosting.
+    - Predict loan approval using applicant information.
+    - Compare **Bagging** and **Boosting** ensemble methods.
+    - Evaluate models using Accuracy, F1-score and ROC-AUC.
+    - Study model generalization using cross-validation.
+    - Analyse feature importance.
+    - Provide individual loan predictions.
+    - Examine fairness across available applicant groups.
     """
 )
 
 
-# =========================================================
-# DATASET
-# =========================================================
+# -----------------------------
+# MODELS
+# -----------------------------
 
-show_dataset_expander(df)
+st.markdown("## 🤖 Models Used")
 
-
-st.divider()
-
-
-# =========================================================
-# NAVIGATION
-# =========================================================
-
-st.header("Project Sections")
-
-col1, col2, col3 = st.columns(3)
-
+col1, col2, col3, col4, col5 = st.columns(5)
 
 with col1:
-
-    st.subheader("📊 Bagging vs Boosting")
-
-    st.write(
-        "View the project's model comparison and evaluation results."
-    )
-
-    if st.button(
-        "Open Model Comparison",
-        use_container_width=True
-    ):
-
-        st.switch_page(
-            "pages/1_Bagging_vs_Boosting.py"
-        )
-
+    st.info("Decision Tree")
 
 with col2:
-
-    st.subheader("🧪 Run Experiment")
-
-    st.write(
-        "Upload a loan approval CSV and generate new results."
-    )
-
-    if st.button(
-        "Open Experiment",
-        use_container_width=True
-    ):
-
-        st.switch_page(
-            "pages/2_Run_Experiment.py"
-        )
-
+    st.info("Bagging")
 
 with col3:
+    st.info("Random Forest")
 
-    st.subheader("🔮 Loan Prediction")
+with col4:
+    st.info("AdaBoost")
 
-    st.write(
-        "Enter applicant details and predict loan approval."
-    )
-
-    if st.button(
-        "Open Prediction",
-        use_container_width=True
-    ):
-
-        st.switch_page(
-            "pages/3_Loan_Prediction.py"
-        )
+with col5:
+    st.info("Gradient Boosting")
 
 
-st.divider()
+# -----------------------------
+# DATASET
+# -----------------------------
 
+if df is not None:
+    show_dataset_expander(df, "📁 Dataset")
+
+
+# -----------------------------
+# FOOTER
+# -----------------------------
+
+st.markdown("---")
 
 st.caption(
-    "Loan Approval Prediction: Bagging vs Boosting"
+    "Loan Approval Prediction • Machine Learning Project"
 )
