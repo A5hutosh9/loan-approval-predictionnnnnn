@@ -77,13 +77,6 @@ st.info(
 # REPOSITORY DATASET
 # =========================================================
 
-repository_df = load_repository_dataset()
-
-show_dataset_expander(
-    repository_df
-)
-
-
 st.divider()
 
 
