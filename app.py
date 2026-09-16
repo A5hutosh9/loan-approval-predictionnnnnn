@@ -23,43 +23,42 @@ df = load_repository_dataset()
 st.sidebar.markdown(
     """
     <div style="
-        background-color: #2f4a67;
-        padding: 20px;
-        border-radius: 10px;
-        margin-bottom: 15px;
+        background-color:#2f4a67;
+        padding:20px;
+        border-radius:10px;
     ">
+
         <div style="
-            color: #2196F3;
-            font-size: 20px;
-            font-weight: 700;
-            margin-bottom: 25px;
+            color:#2196F3;
+            font-size:20px;
+            font-weight:700;
+            margin-bottom:20px;
         ">
             Machine Learning Project
         </div>
 
         <div style="
-            color: #2196F3;
-            font-size: 18px;
-            line-height: 1.6;
-            margin-bottom: 22px;
+            color:#2196F3;
+            font-size:18px;
+            line-height:1.6;
+            margin-bottom:20px;
         ">
             Loan Approval Prediction:<br>
             Bagging vs Boosting
         </div>
 
         <div style="
-            color: #B8860B;
-            font-size: 17px;
-            font-weight: 600;
+            color:#B8860B;
+            font-size:17px;
+            font-weight:600;
         ">
             By- Ashutosh Paltasingh
         </div>
+
     </div>
     """,
     unsafe_allow_html=True
 )
-
-st.sidebar.markdown("---")
 
 # -----------------------------
 # HOME
