@@ -22,8 +22,8 @@ from sklearn.ensemble import (
 # =========================================================
 
 st.set_page_config(
-    page_title="Run Bagging vs Boosting Experiment",
-    page_icon="📊",
+    page_title="Run Experiment",
+    page_icon="🧪",
     layout="wide"
 )
 
@@ -32,52 +32,57 @@ st.set_page_config(
 # TITLE
 # =========================================================
 
-st.title("📊 Loan Approval Prediction: Bagging vs Boosting")
+st.title("🧪 Run Bagging vs Boosting Experiment")
 
 st.write(
-    "Upload a loan approval dataset and run the complete "
-    "Bagging vs Boosting experiment."
+    "Upload a CSV dataset and automatically train and compare "
+    "Decision Tree, Bagging, Random Forest, AdaBoost and "
+    "Gradient Boosting."
 )
 
 st.divider()
 
 
 # =========================================================
-# 1. UPLOAD DATASET
+# UPLOAD DATASET
 # =========================================================
 
 st.header("1. Upload Dataset")
 
 uploaded_file = st.file_uploader(
-    "Upload your loan approval CSV file",
+    "Upload CSV file",
     type=["csv"]
 )
+
 
 if uploaded_file is None:
 
     st.info(
-        "Please upload loan_approval_dataset.csv to start."
+        "Upload a CSV file to start the experiment."
     )
 
     st.stop()
 
 
 # =========================================================
-# READ CSV
+# READ DATASET
 # =========================================================
 
 try:
 
-    df = pd.read_csv(uploaded_file)
+    df = pd.read_csv(
+        uploaded_file
+    )
 
 except Exception as e:
 
-    st.error(f"Could not read the CSV file: {e}")
+    st.error(
+        f"Could not read CSV: {e}"
+    )
 
     st.stop()
 
 
-# Clean column names
 df.columns = df.columns.str.strip()
 
 
@@ -88,77 +93,59 @@ st.success(
 
 
 # =========================================================
-# 2. DATASET PREVIEW
+# DATASET EXPANDER
 # =========================================================
 
-st.header("2. Dataset Preview")
+with st.expander("📁 Dataset — Click to View"):
 
-st.dataframe(
-    df.head(10),
-    use_container_width=True,
-    hide_index=True
-)
+    st.write(
+        f"Rows: **{df.shape[0]}**"
+    )
+
+    st.write(
+        f"Columns: **{df.shape[1]}**"
+    )
+
+    st.dataframe(
+        df,
+        use_container_width=True,
+        height=500,
+        hide_index=True
+    )
 
 
-# =========================================================
-# BASIC DATASET INFORMATION
-# =========================================================
-
-with st.expander("View Dataset Information"):
-
-    col1, col2, col3 = st.columns(3)
-
-    with col1:
-        st.metric(
-            "Rows",
-            df.shape[0]
-        )
-
-    with col2:
-        st.metric(
-            "Columns",
-            df.shape[1]
-        )
-
-    with col3:
-        st.metric(
-            "Missing Values",
-            int(df.isnull().sum().sum())
-        )
+st.divider()
 
 
 # =========================================================
-# 3. TARGET COLUMN
+# TARGET
 # =========================================================
 
-st.header("3. Select Target Column")
+st.header("2. Target Column")
 
 
-# Automatically select loan_status
 if "loan_status" in df.columns:
 
     target_column = "loan_status"
 
     st.info(
-        "Target column automatically selected: loan_status"
+        "loan_status automatically selected as target."
     )
 
 else:
 
     target_column = st.selectbox(
-        "Select the target column",
+        "Select target column",
         df.columns
     )
 
 
 # =========================================================
-# PREPARE DATA
+# CLEAN DATA
 # =========================================================
 
 data = df.copy()
 
-
-# Remove rows with missing values
 before_rows = len(data)
 
 data = data.dropna()
@@ -169,7 +156,8 @@ removed_rows = before_rows - len(data)
 if removed_rows > 0:
 
     st.warning(
-        f"{removed_rows} rows with missing values were removed."
+        f"{removed_rows} rows containing missing values "
+        "were removed."
     )
 
 
@@ -177,16 +165,16 @@ if removed_rows > 0:
 # TARGET PROCESSING
 # =========================================================
 
-y_raw = data[target_column].astype(str).str.strip()
+y_raw = (
+    data[target_column]
+    .astype(str)
+    .str.strip()
+)
 
-
-# ---------------------------------------------------------
-# Loan dataset target
-# ---------------------------------------------------------
 
 if target_column == "loan_status":
 
-    target_mapping = {
+    mapping = {
         "Approved": 1,
         "Rejected": 0,
         "APPROVED": 1,
@@ -195,25 +183,22 @@ if target_column == "loan_status":
         "rejected": 0
     }
 
-    y = y_raw.map(target_mapping)
-
-    # Check for unknown target values
+    y = y_raw.map(
+        mapping
+    )
 
     if y.isna().any():
 
-        unknown_values = y_raw[y.isna()].unique()
+        unknown = y_raw[
+            y.isna()
+        ].unique()
 
         st.error(
-            "Unknown values found in loan_status: "
-            + str(list(unknown_values))
+            f"Unknown loan_status values: {list(unknown)}"
         )
 
         st.stop()
 
-
-# ---------------------------------------------------------
-# Generic binary target
-# ---------------------------------------------------------
 
 else:
 
@@ -222,8 +207,7 @@ else:
     if len(unique_values) != 2:
 
         st.error(
-            "The selected target must contain exactly "
-            f"2 classes. Found {len(unique_values)} classes."
+            "The target must contain exactly two classes."
         )
 
         st.write(
@@ -234,15 +218,16 @@ else:
         st.stop()
 
 
-    class_mapping = {
+    mapping = {
         unique_values[0]: 0,
         unique_values[1]: 1
     }
 
-    y = y_raw.map(class_mapping)
+    y = y_raw.map(
+        mapping
+    )
 
 
-# Convert target to integer
 y = y.astype(int)
 
 
@@ -250,80 +235,39 @@ y = y.astype(int)
 # TARGET DISTRIBUTION
 # =========================================================
 
-st.subheader("Target Distribution")
+st.header("3. Target Distribution")
 
-class_counts = y.value_counts().sort_index()
-
-
-target_names = []
-
-if target_column == "loan_status":
-
-    target_names = []
-
-    for value in class_counts.index:
-
-        if value == 0:
-            target_names.append("Rejected")
-
-        else:
-            target_names.append("Approved")
-
-else:
-
-    target_names = [
-        str(value)
-        for value in class_counts.index
-    ]
+counts = y.value_counts()
 
 
-target_distribution = pd.DataFrame({
-    "Class": target_names,
-    "Count": class_counts.values
-})
+if len(counts) != 2:
+
+    st.error(
+        "Binary classification is required."
+    )
+
+    st.stop()
 
 
 st.dataframe(
-    target_distribution,
+    pd.DataFrame({
+        "Class": counts.index,
+        "Count": counts.values
+    }),
     use_container_width=True,
     hide_index=True
 )
 
 
-# Make sure binary
-if len(class_counts) != 2:
-
-    st.error(
-        "This experiment requires a binary classification target."
-    )
-
-    st.stop()
-
-
-# Make sure enough samples for 5 folds
-if class_counts.min() < 5:
-
-    st.error(
-        "Each class must contain at least 5 samples "
-        "for 5-fold cross-validation."
-    )
-
-    st.stop()
-
-
 # =========================================================
-# 4. FEATURES
+# FEATURES
 # =========================================================
-
-st.header("4. Feature Preparation")
-
 
 X = data.drop(
     columns=[target_column]
 )
 
 
-# Remove loan_id
 if "loan_id" in X.columns:
 
     X = X.drop(
@@ -331,20 +275,19 @@ if "loan_id" in X.columns:
     )
 
 
-# Identify categorical columns
 categorical_columns = X.select_dtypes(
     include=["object", "category"]
 ).columns.tolist()
 
 
-# Identify numerical columns
 numerical_columns = X.select_dtypes(
     exclude=["object", "category"]
 ).columns.tolist()
 
 
-col1, col2 = st.columns(2)
+st.header("4. Feature Information")
 
+col1, col2 = st.columns(2)
 
 with col1:
 
@@ -352,7 +295,6 @@ with col1:
         "Numerical Features",
         len(numerical_columns)
     )
-
 
 with col2:
 
@@ -363,12 +305,12 @@ with col2:
 
 
 st.write(
-    "**Numerical columns:**",
+    "Numerical:",
     numerical_columns
 )
 
 st.write(
-    "**Categorical columns:**",
+    "Categorical:",
     categorical_columns
 )
 
@@ -399,7 +341,7 @@ preprocessor = ColumnTransformer(
 
 
 # =========================================================
-# 5. MODELS
+# MODELS
 # =========================================================
 
 models = {
@@ -468,31 +410,20 @@ models = {
 
 
 # =========================================================
-# 6. RUN EXPERIMENT
+# RUN
 # =========================================================
 
 st.divider()
 
 st.header("5. Run Experiment")
 
-
-st.write(
-    "The experiment uses 5-fold Stratified Cross-Validation "
-    "to compare all five models."
-)
-
-
-run_experiment = st.button(
-    "🚀 Run Bagging vs Boosting Experiment",
+run = st.button(
+    "🚀 Run Experiment",
     type="primary"
 )
 
 
-if run_experiment:
-
-    st.divider()
-
-    st.header("6. Training Models")
+if run:
 
     cv = StratifiedKFold(
         n_splits=5,
@@ -504,24 +435,20 @@ if run_experiment:
     results = []
 
 
-    progress_bar = st.progress(0)
+    progress = st.progress(0)
 
-
-    status_text = st.empty()
-
-
-    total_models = len(models)
+    status = st.empty()
 
 
     # =====================================================
-    # TRAIN EACH MODEL
+    # TRAIN MODELS
     # =====================================================
 
-    for index, (name, classifier) in enumerate(
+    for i, (name, classifier) in enumerate(
         models.items()
     ):
 
-        status_text.write(
+        status.write(
             f"Training **{name}**..."
         )
 
@@ -570,40 +497,48 @@ if run_experiment:
                 name,
 
             "Train Accuracy":
-                scores["train_accuracy"].mean(),
+                scores[
+                    "train_accuracy"
+                ].mean(),
 
             "Validation Accuracy":
-                scores["test_accuracy"].mean(),
+                scores[
+                    "test_accuracy"
+                ].mean(),
 
             "Train F1":
-                scores["train_f1"].mean(),
+                scores[
+                    "train_f1"
+                ].mean(),
 
             "Validation F1":
-                scores["test_f1"].mean(),
+                scores[
+                    "test_f1"
+                ].mean(),
 
             "Train ROC-AUC":
-                scores["train_roc_auc"].mean(),
+                scores[
+                    "train_roc_auc"
+                ].mean(),
 
             "Validation ROC-AUC":
-                scores["test_roc_auc"].mean()
+                scores[
+                    "test_roc_auc"
+                ].mean()
         })
 
 
-        progress_bar.progress(
+        progress.progress(
             int(
-                ((index + 1) / total_models) * 100
+                ((i + 1) / len(models)) * 100
             )
         )
 
 
-    status_text.success(
-        "All five models completed successfully."
+    status.success(
+        "All models completed successfully."
     )
 
-
-    # =====================================================
-    # RESULTS DATAFRAME
-    # =====================================================
 
     results_df = pd.DataFrame(
         results
@@ -611,66 +546,53 @@ if run_experiment:
 
 
     # =====================================================
-    # 7. PERFORMANCE TABLE
+    # RESULTS TABLE
     # =====================================================
 
-    st.header("7. Model Performance Comparison")
+    st.header("6. Results")
 
 
-    display_df = results_df.copy()
+    display = results_df.copy()
 
 
-    percentage_columns = [
+    for column in [
 
         "Train Accuracy",
-
         "Validation Accuracy",
-
         "Train F1",
-
         "Validation F1",
-
         "Train ROC-AUC",
-
         "Validation ROC-AUC"
-    ]
 
+    ]:
 
-    for column in percentage_columns:
+        display[column] = (
 
-        display_df[column] = (
-
-            display_df[column] * 100
+            display[column] * 100
 
         ).round(2).astype(str) + "%"
 
 
     st.dataframe(
-
-        display_df,
-
+        display,
         use_container_width=True,
-
         hide_index=True
     )
 
 
-    st.caption(
-        "Values represent the mean score across 5 stratified folds."
-    )
+    st.divider()
 
 
     # =====================================================
-    # 8. ACCURACY GRAPH
+    # ACCURACY GRAPH
     # =====================================================
 
-    st.header("8. Accuracy Comparison")
+    st.header("7. Accuracy Comparison")
 
 
     x = np.arange(
         len(results_df)
     )
-
 
     width = 0.35
 
@@ -681,58 +603,42 @@ if run_experiment:
 
 
     ax.bar(
-
         x - width / 2,
-
         results_df["Train Accuracy"],
-
         width,
-
         label="Training"
     )
 
 
     ax.bar(
-
         x + width / 2,
-
         results_df["Validation Accuracy"],
-
         width,
-
         label="Validation"
     )
 
 
     ax.set_xticks(x)
 
-
     ax.set_xticklabels(
-
         results_df["Model"],
-
         rotation=20
     )
-
 
     ax.set_ylabel(
         "Accuracy"
     )
 
-
     ax.set_ylim(
         0,
         1.05
     )
-
 
     ax.set_title(
         "Training vs Validation Accuracy"
     )
 
-
     ax.legend()
-
 
     ax.grid(
         axis="y",
@@ -740,19 +646,16 @@ if run_experiment:
     )
 
 
-    st.pyplot(
-        fig
-    )
-
+    st.pyplot(fig)
 
     plt.close(fig)
 
 
     # =====================================================
-    # 9. F1 GRAPH
+    # F1 GRAPH
     # =====================================================
 
-    st.header("9. F1 Score Comparison")
+    st.header("8. F1 Score Comparison")
 
 
     fig, ax = plt.subplots(
@@ -761,58 +664,42 @@ if run_experiment:
 
 
     ax.bar(
-
         x - width / 2,
-
         results_df["Train F1"],
-
         width,
-
         label="Training"
     )
 
 
     ax.bar(
-
         x + width / 2,
-
         results_df["Validation F1"],
-
         width,
-
         label="Validation"
     )
 
 
     ax.set_xticks(x)
 
-
     ax.set_xticklabels(
-
         results_df["Model"],
-
         rotation=20
     )
-
 
     ax.set_ylabel(
         "F1 Score"
     )
 
-
     ax.set_ylim(
         0,
         1.05
     )
 
-
     ax.set_title(
         "Training vs Validation F1 Score"
     )
 
-
     ax.legend()
-
 
     ax.grid(
         axis="y",
@@ -820,19 +707,16 @@ if run_experiment:
     )
 
 
-    st.pyplot(
-        fig
-    )
-
+    st.pyplot(fig)
 
     plt.close(fig)
 
 
     # =====================================================
-    # 10. ROC-AUC GRAPH
+    # ROC-AUC GRAPH
     # =====================================================
 
-    st.header("10. ROC-AUC Comparison")
+    st.header("9. ROC-AUC Comparison")
 
 
     fig, ax = plt.subplots(
@@ -841,58 +725,42 @@ if run_experiment:
 
 
     ax.bar(
-
         x - width / 2,
-
         results_df["Train ROC-AUC"],
-
         width,
-
         label="Training"
     )
 
 
     ax.bar(
-
         x + width / 2,
-
         results_df["Validation ROC-AUC"],
-
         width,
-
         label="Validation"
     )
 
 
     ax.set_xticks(x)
 
-
     ax.set_xticklabels(
-
         results_df["Model"],
-
         rotation=20
     )
-
 
     ax.set_ylabel(
         "ROC-AUC"
     )
-
 
     ax.set_ylim(
         0,
         1.05
     )
 
-
     ax.set_title(
         "Training vs Validation ROC-AUC"
     )
 
-
     ax.legend()
-
 
     ax.grid(
         axis="y",
@@ -900,22 +768,19 @@ if run_experiment:
     )
 
 
-    st.pyplot(
-        fig
-    )
-
+    st.pyplot(fig)
 
     plt.close(fig)
 
 
     # =====================================================
-    # 11. GENERALIZATION GAP
+    # GENERALIZATION GAP
     # =====================================================
 
-    st.header("11. Generalization Gap")
+    st.header("10. Generalization Gap")
 
 
-    gap_df = pd.DataFrame({
+    gap = pd.DataFrame({
 
         "Model":
             results_df["Model"],
@@ -937,15 +802,13 @@ if run_experiment:
     })
 
 
-    gap_display = gap_df.copy()
+    gap_display = gap.copy()
 
 
     for column in [
 
         "Accuracy Gap",
-
         "F1 Gap",
-
         "ROC-AUC Gap"
 
     ]:
@@ -958,93 +821,17 @@ if run_experiment:
 
 
     st.dataframe(
-
         gap_display,
-
         use_container_width=True,
-
         hide_index=True
     )
 
 
     # =====================================================
-    # 12. INTERPRETATION
+    # DOWNLOAD
     # =====================================================
 
-    st.header("12. Experiment Summary")
-
-
-    best_accuracy_index = results_df[
-        "Validation Accuracy"
-    ].idxmax()
-
-
-    best_f1_index = results_df[
-        "Validation F1"
-    ].idxmax()
-
-
-    best_auc_index = results_df[
-        "Validation ROC-AUC"
-    ].idxmax()
-
-
-    best_accuracy_model = results_df.loc[
-        best_accuracy_index,
-        "Model"
-    ]
-
-
-    best_f1_model = results_df.loc[
-        best_f1_index,
-        "Model"
-    ]
-
-
-    best_auc_model = results_df.loc[
-        best_auc_index,
-        "Model"
-    ]
-
-
-    col1, col2, col3 = st.columns(3)
-
-
-    with col1:
-
-        st.metric(
-            "Highest Validation Accuracy",
-            best_accuracy_model
-        )
-
-
-    with col2:
-
-        st.metric(
-            "Highest Validation F1",
-            best_f1_model
-        )
-
-
-    with col3:
-
-        st.metric(
-            "Highest Validation ROC-AUC",
-            best_auc_model
-        )
-
-
-    st.info(
-        "The results above are calculated directly from "
-        "the uploaded dataset. They are not hard-coded."
-    )
-
-
-    # =====================================================
-    # 13. DOWNLOAD RESULTS
-    # =====================================================
-
-    st.header("13. Download Results")
+    st.header("11. Download Results")
 
 
     csv_data = results_df.to_csv(
@@ -1054,7 +841,7 @@ if run_experiment:
 
     st.download_button(
 
-        label="⬇️ Download Model Results CSV",
+        "⬇️ Download Results CSV",
 
         data=csv_data,
 
