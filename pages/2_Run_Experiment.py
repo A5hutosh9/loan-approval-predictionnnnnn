@@ -4,21 +4,18 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 from sklearn.model_selection import (
+    train_test_split,
     StratifiedKFold,
     cross_validate,
     cross_val_predict
 )
 
 from sklearn.compose import ColumnTransformer
-
 from sklearn.pipeline import Pipeline
-
 from sklearn.preprocessing import OneHotEncoder
-
 from sklearn.impute import SimpleImputer
 
 from sklearn.tree import DecisionTreeClassifier
-
 from sklearn.ensemble import (
     BaggingClassifier,
     RandomForestClassifier,
@@ -27,22 +24,14 @@ from sklearn.ensemble import (
 )
 
 from sklearn.metrics import (
-    roc_curve,
-    auc,
-    confusion_matrix,
-    ConfusionMatrixDisplay
+    accuracy_score,
+    f1_score,
+    roc_auc_score,
+    roc_curve
 )
 
-from utils import (
-    load_repository_dataset,
-    show_dataset_expander,
-    normalize_binary_target
-)
+from utils import normalize_binary_target
 
-
-# =========================================================
-# PAGE CONFIG
-# =========================================================
 
 st.set_page_config(
     page_title="Run Experiment",
@@ -51,458 +40,285 @@ st.set_page_config(
 )
 
 
-# =========================================================
-# PAGE TITLE
-# =========================================================
+st.title("🧪 Run Experiment")
 
-st.title("🧪 Run Bagging vs Boosting Experiment")
-
-st.write(
+st.markdown(
     """
-    Upload a compatible loan approval CSV dataset and run the
-    complete ensemble learning experiment.
+    Upload your own loan approval dataset and compare
+    Bagging and Boosting models automatically.
     """
 )
 
 
-st.info(
-    """
-    This page calculates new results from the uploaded CSV.
-    The results are not hard-coded.
-    """
-)
-
-
-# =========================================================
-# REPOSITORY DATASET
-# =========================================================
-
-st.divider()
-
-
-# =========================================================
+# ==========================================================
 # UPLOAD DATASET
-# =========================================================
-
-st.header("1. Upload Dataset")
-
+# ==========================================================
 
 uploaded_file = st.file_uploader(
-    "Upload a CSV file",
+    "Upload CSV Dataset",
     type=["csv"]
 )
 
 
 if uploaded_file is None:
 
-    st.warning(
-        "Upload a CSV file to run the experiment."
+    st.info(
+        "Upload a CSV file to start a new experiment."
+    )
+
+    st.markdown(
+        """
+        ### Supported Dataset Structure
+
+        Your dataset should contain:
+
+        - One binary target column
+        - Numerical and/or categorical features
+        - Common target labels such as:
+          - Approved / Rejected
+          - Yes / No
+          - 1 / 0
+          - True / False
+        """
     )
 
     st.stop()
 
 
-# =========================================================
-# READ DATASET
-# =========================================================
+# ==========================================================
+# READ DATA
+# ==========================================================
 
 try:
 
-    df = pd.read_csv(
-        uploaded_file
-    )
+    df = pd.read_csv(uploaded_file)
 
-except Exception as error:
+    df.columns = df.columns.str.strip()
 
-    st.error(
-        f"Could not read the CSV file: {error}"
-    )
+except Exception as e:
+
+    st.error(f"Could not read the CSV file: {e}")
 
     st.stop()
 
 
-df.columns = (
-    df.columns
-    .astype(str)
-    .str.strip()
-)
-
-
-st.success(
-    f"Dataset loaded: {df.shape[0]} rows × {df.shape[1]} columns"
-)
-
-
-# =========================================================
-# UPLOADED DATASET EXPANDER
-# =========================================================
+# ==========================================================
+# DATASET EXPANDER
+# ==========================================================
 
 with st.expander("📁 Uploaded Dataset"):
 
+    st.write(
+        f"**Rows:** {df.shape[0]} | "
+        f"**Columns:** {df.shape[1]}"
+    )
+
     st.dataframe(
         df,
-        use_container_width=True,
-        height=450,
-        hide_index=True
+        use_container_width=True
     )
 
-    col1, col2, col3 = st.columns(3)
 
-    with col1:
-        st.metric(
-            "Rows",
-            df.shape[0]
-        )
-
-    with col2:
-        st.metric(
-            "Columns",
-            df.shape[1]
-        )
-
-    with col3:
-        st.metric(
-            "Missing Values",
-            int(df.isnull().sum().sum())
-        )
-
-
-# =========================================================
+# ==========================================================
 # TARGET SELECTION
-# =========================================================
+# ==========================================================
 
-st.header("2. Target Selection")
-
-
-# Try to automatically identify a likely target
-target_candidates = [
-
-    column
-    for column in df.columns
-
-    if any(
-        keyword in column.lower()
-        for keyword in [
-            "loan_status",
-            "loan_status",
-            "approval",
-            "approved",
-            "status",
-            "target"
-        ]
-    )
-]
-
-
-if target_candidates:
-
-    default_target = target_candidates[0]
-
-    target_index = list(
-        df.columns
-    ).index(
-        default_target
-    )
-
-else:
-
-    target_index = 0
-
+st.header("🎯 Select Target Column")
 
 target_column = st.selectbox(
-    "Select the target column",
-    df.columns,
-    index=target_index
+    "Choose the column containing loan approval status:",
+    df.columns
 )
 
 
-# =========================================================
-# TARGET PREPARATION
-# =========================================================
+# ==========================================================
+# PREPARE TARGET
+# ==========================================================
 
-target_series = df[target_column]
+try:
 
-
-# Remove rows with missing target
-valid_target_rows = (
-    target_series.notna()
-)
-
-data = df.loc[
-    valid_target_rows
-].copy()
-
-
-target_series = data[
-    target_column
-]
-
-
-y, target_mapping = normalize_binary_target(
-    target_series
-)
-
-
-if y is None:
-
-    st.error(
-        """
-        The selected target could not be converted into a
-        binary classification problem.
-
-        The target must contain exactly two classes, for example:
-        Approved / Rejected
-        Yes / No
-        1 / 0
-        """
+    y, target_mapping = normalize_binary_target(
+        df[target_column]
     )
 
-    st.write(
-        "Values found in the target:"
-    )
+except Exception as e:
 
-    st.write(
-        target_series.unique()
-    )
+    st.error(str(e))
 
     st.stop()
 
 
-# =========================================================
-# TARGET DISTRIBUTION
-# =========================================================
+# Remove missing target rows
+valid_rows = y.notna()
 
-st.subheader("Target Distribution")
-
-
-class_counts = y.value_counts().sort_index()
+df = df.loc[valid_rows].copy()
+y = y.loc[valid_rows].astype(int)
 
 
-distribution = pd.DataFrame({
-    "Class": [
-        "Class 0",
-        "Class 1"
-    ],
-
-    "Count": [
-        class_counts.get(0, 0),
-        class_counts.get(1, 0)
-    ]
-})
-
-
-if target_mapping is not None:
-
-    mapping_text = ", ".join(
-        [
-            f"{key} → {value}"
-            for key, value in target_mapping.items()
-        ]
-    )
-
-    st.caption(
-        f"Target mapping: {mapping_text}"
-    )
-
-
-st.dataframe(
-    distribution,
-    use_container_width=True,
-    hide_index=True
-)
-
-
-# =========================================================
-# CHECK CLASS COUNTS
-# =========================================================
-
-if len(class_counts) != 2:
-
-    st.error(
-        "The target must contain exactly two classes."
-    )
-
-    st.stop()
-
-
-minimum_class_count = class_counts.min()
-
-
-if minimum_class_count < 2:
-
-    st.error(
-        "At least two samples are required in each class."
-    )
-
-    st.stop()
-
-
-# =========================================================
+# ==========================================================
 # FEATURES
-# =========================================================
+# ==========================================================
 
-st.header("3. Feature Preparation")
-
-
-X = data.drop(
-    columns=[target_column]
-)
+X = df.drop(columns=[target_column])
 
 
-# Remove common ID columns
-id_columns = [
+# Drop likely ID columns
+id_columns = []
 
-    column
+for col in X.columns:
 
-    for column in X.columns
+    name = col.lower().replace("_", "").replace(" ", "")
 
-    if column.lower() in [
+    if name in [
         "id",
-        "loan_id",
-        "customer_id",
-        "application_id",
-        "applicant_id"
-    ]
-]
+        "loanid",
+        "applicationid",
+        "customerid",
+        "applicantid"
+    ]:
+
+        id_columns.append(col)
 
 
 if id_columns:
 
-    X = X.drop(
-        columns=id_columns
+    X = X.drop(columns=id_columns)
+
+    st.info(
+        f"Automatically removed ID column(s): "
+        f"{', '.join(id_columns)}"
     )
 
 
-# Detect categorical columns
-categorical_columns = (
-    X.select_dtypes(
-        include=[
-            "object",
-            "category",
-            "bool"
-        ]
-    )
-    .columns
-    .tolist()
-)
+# ==========================================================
+# REMOVE COMPLETELY EMPTY COLUMNS
+# ==========================================================
 
+empty_columns = [
+    col for col in X.columns
+    if X[col].isna().all()
+]
 
-# Detect numerical columns
-numerical_columns = (
-    X.select_dtypes(
-        include=np.number
-    )
-    .columns
-    .tolist()
-)
+if empty_columns:
 
+    X = X.drop(columns=empty_columns)
 
-if len(X.columns) == 0:
-
-    st.error(
-        "No usable feature columns remain after removing the target."
+    st.warning(
+        f"Removed completely empty columns: "
+        f"{', '.join(empty_columns)}"
     )
 
-    st.stop()
+
+# ==========================================================
+# DETECT FEATURES
+# ==========================================================
+
+numeric_features = X.select_dtypes(
+    include=["number"]
+).columns.tolist()
+
+categorical_features = X.select_dtypes(
+    exclude=["number"]
+).columns.tolist()
 
 
-if len(numerical_columns) == 0 and len(categorical_columns) == 0:
-
-    st.error(
-        "No numerical or categorical features were detected."
-    )
-
-    st.stop()
-
+st.header("🔍 Detected Features")
 
 col1, col2 = st.columns(2)
 
-
 with col1:
 
-    st.metric(
-        "Numerical Features",
-        len(numerical_columns)
-    )
+    st.subheader("Numerical Features")
+
+    if numeric_features:
+        st.write(numeric_features)
+    else:
+        st.write("None")
 
 
 with col2:
 
+    st.subheader("Categorical Features")
+
+    if categorical_features:
+        st.write(categorical_features)
+    else:
+        st.write("None")
+
+
+# ==========================================================
+# CLASS DISTRIBUTION
+# ==========================================================
+
+st.header("📊 Target Distribution")
+
+target_counts = y.value_counts().sort_index()
+
+col1, col2 = st.columns(2)
+
+with col1:
+
     st.metric(
-        "Categorical Features",
-        len(categorical_columns)
+        "Class 0",
+        int(target_counts.get(0, 0))
+    )
+
+with col2:
+
+    st.metric(
+        "Class 1",
+        int(target_counts.get(1, 0))
     )
 
 
-with st.expander("View Detected Features"):
+# ==========================================================
+# PREPROCESSING
+# ==========================================================
 
-    st.write(
-        "**Numerical:**",
-        numerical_columns
+numeric_pipeline = Pipeline([
+    (
+        "imputer",
+        SimpleImputer(strategy="median")
     )
+])
 
-    st.write(
-        "**Categorical:**",
-        categorical_columns
+
+categorical_pipeline = Pipeline([
+    (
+        "imputer",
+        SimpleImputer(strategy="most_frequent")
+    ),
+
+    (
+        "encoder",
+        OneHotEncoder(
+            handle_unknown="ignore"
+        )
     )
+])
 
-
-# =========================================================
-# PREPROCESSOR
-# =========================================================
 
 transformers = []
 
 
-if numerical_columns:
-
-    numerical_pipeline = Pipeline(
-        steps=[
-
-            (
-                "imputer",
-                SimpleImputer(
-                    strategy="median"
-                )
-            )
-        ]
-    )
+if numeric_features:
 
     transformers.append(
         (
-            "num",
-            numerical_pipeline,
-            numerical_columns
+            "numeric",
+            numeric_pipeline,
+            numeric_features
         )
     )
 
 
-if categorical_columns:
-
-    categorical_pipeline = Pipeline(
-        steps=[
-
-            (
-                "imputer",
-                SimpleImputer(
-                    strategy="most_frequent"
-                )
-            ),
-
-            (
-                "encoder",
-                OneHotEncoder(
-                    handle_unknown="ignore"
-                )
-            )
-        ]
-    )
+if categorical_features:
 
     transformers.append(
         (
-            "cat",
+            "categorical",
             categorical_pipeline,
-            categorical_columns
+            categorical_features
         )
     )
 
@@ -512,9 +328,9 @@ preprocessor = ColumnTransformer(
 )
 
 
-# =========================================================
+# ==========================================================
 # MODELS
-# =========================================================
+# ==========================================================
 
 models = {
 
@@ -534,10 +350,9 @@ models = {
                 random_state=42
             ),
             n_estimators=100,
-            max_samples=1.0,
             bootstrap=True,
             random_state=42,
-            n_jobs=-1
+            n_jobs=1
         ),
 
     "Random Forest":
@@ -548,7 +363,7 @@ models = {
             min_samples_leaf=1,
             max_features="sqrt",
             random_state=42,
-            n_jobs=-1
+            n_jobs=1
         ),
 
     "AdaBoost":
@@ -572,47 +387,16 @@ models = {
 }
 
 
-# =========================================================
-# CROSS VALIDATION
-# =========================================================
+# ==========================================================
+# RUN BUTTON
+# ==========================================================
 
-number_of_folds = min(
-    5,
-    int(minimum_class_count)
-)
-
-
-if number_of_folds < 2:
-
-    st.error(
-        "Not enough samples for cross-validation."
-    )
-
-    st.stop()
-
-
-cv = StratifiedKFold(
-    n_splits=number_of_folds,
-    shuffle=True,
-    random_state=42
-)
-
-
-st.info(
-    f"Using {number_of_folds}-fold stratified cross-validation."
-)
-
-
-# =========================================================
-# RUN EXPERIMENT
-# =========================================================
-
-st.header("4. Run Experiment")
-
+st.markdown("---")
 
 run_experiment = st.button(
-    "🚀 Run Bagging vs Boosting Experiment",
-    type="primary"
+    "🚀 Run Experiment",
+    type="primary",
+    use_container_width=True
 )
 
 
@@ -621,216 +405,232 @@ if not run_experiment:
     st.stop()
 
 
-# =========================================================
-# TRAIN MODELS
-# =========================================================
+# ==========================================================
+# CHECK DATA
+# ==========================================================
+
+if len(X) < 20:
+
+    st.error(
+        "Dataset is too small for a meaningful experiment."
+    )
+
+    st.stop()
+
+
+class_counts = y.value_counts()
+
+if len(class_counts) != 2:
+
+    st.error(
+        "The target column must contain exactly two classes."
+    )
+
+    st.stop()
+
+
+min_class_count = int(class_counts.min())
+
+if min_class_count < 2:
+
+    st.error(
+        "Each class must contain at least 2 samples."
+    )
+
+    st.stop()
+
+
+n_splits = min(
+    5,
+    min_class_count
+)
+
+
+# ==========================================================
+# CROSS VALIDATION
+# ==========================================================
+
+cv = StratifiedKFold(
+    n_splits=n_splits,
+    shuffle=True,
+    random_state=42
+)
+
 
 results = []
 
 roc_data = {}
 
+
 progress = st.progress(0)
 
-status = st.empty()
+model_items = list(models.items())
 
 
-for index, (
-    model_name,
-    model
-) in enumerate(models.items()):
+for index, (model_name, model) in enumerate(model_items):
 
-    status.write(
-        f"Training **{model_name}**..."
-    )
+    pipeline = Pipeline([
+        (
+            "preprocessor",
+            preprocessor
+        ),
+        (
+            "model",
+            model
+        )
+    ])
 
-
-    pipeline = Pipeline(
-        steps=[
-
-            (
-                "preprocessor",
-                preprocessor
-            ),
-
-            (
-                "model",
-                model
-            )
-        ]
-    )
-
-
-    # -----------------------------------------------------
-    # CROSS VALIDATION METRICS
-    # -----------------------------------------------------
 
     scores = cross_validate(
-
         pipeline,
-
         X,
-
         y,
-
         cv=cv,
-
         scoring=[
             "accuracy",
             "f1",
             "roc_auc"
         ],
-
         return_train_score=True,
-
         n_jobs=1
     )
+
+
+    train_accuracy = scores[
+        "train_accuracy"
+    ].mean()
+
+    validation_accuracy = scores[
+        "test_accuracy"
+    ].mean()
+
+
+    train_f1 = scores[
+        "train_f1"
+    ].mean()
+
+    validation_f1 = scores[
+        "test_f1"
+    ].mean()
+
+
+    train_auc = scores[
+        "train_roc_auc"
+    ].mean()
+
+    validation_auc = scores[
+        "test_roc_auc"
+    ].mean()
 
 
     results.append({
 
-        "Model":
-            model_name,
+        "Model": model_name,
 
         "Train Accuracy":
-            scores["train_accuracy"].mean(),
+            train_accuracy,
 
         "Validation Accuracy":
-            scores["test_accuracy"].mean(),
+            validation_accuracy,
 
         "Train F1":
-            scores["train_f1"].mean(),
+            train_f1,
 
         "Validation F1":
-            scores["test_f1"].mean(),
+            validation_f1,
 
         "Train ROC-AUC":
-            scores["train_roc_auc"].mean(),
+            train_auc,
 
         "Validation ROC-AUC":
-            scores["test_roc_auc"].mean()
+            validation_auc,
+
+        "Accuracy Gap":
+            train_accuracy - validation_accuracy,
+
+        "F1 Gap":
+            train_f1 - validation_f1,
+
+        "ROC-AUC Gap":
+            train_auc - validation_auc
     })
 
 
-    # -----------------------------------------------------
-    # ROC CURVE
-    # -----------------------------------------------------
-
+    # ROC predictions
     probabilities = cross_val_predict(
-
         pipeline,
-
         X,
-
         y,
-
         cv=cv,
-
         method="predict_proba",
-
         n_jobs=1
     )[:, 1]
 
 
-    false_positive_rate, true_positive_rate, _ = (
-        roc_curve(
-            y,
-            probabilities
-        )
-    )
-
-
-    roc_auc_value = auc(
-        false_positive_rate,
-        true_positive_rate
+    fpr, tpr, _ = roc_curve(
+        y,
+        probabilities
     )
 
 
     roc_data[model_name] = (
-        false_positive_rate,
-        true_positive_rate,
-        roc_auc_value
+        fpr,
+        tpr,
+        validation_auc
     )
 
 
     progress.progress(
-        int(
-            ((index + 1) / len(models)) * 100
-        )
+        (index + 1) / len(model_items)
     )
 
 
-status.success(
-    "All models completed successfully."
-)
-
-
-# =========================================================
+# ==========================================================
 # RESULTS DATAFRAME
-# =========================================================
+# ==========================================================
 
-results_df = pd.DataFrame(
-    results
+results_df = pd.DataFrame(results)
+
+
+st.success(
+    "Experiment completed successfully."
 )
 
 
-# =========================================================
-# MODEL PERFORMANCE TABLE
-# =========================================================
+# ==========================================================
+# RESULTS TABLE
+# ==========================================================
 
-st.divider()
-
-st.header("5. Model Performance")
-
-
-display_df = results_df.copy()
-
-
-for column in [
-
-    "Train Accuracy",
-    "Validation Accuracy",
-    "Train F1",
-    "Validation F1",
-    "Train ROC-AUC",
-    "Validation ROC-AUC"
-
-]:
-
-    display_df[column] = (
-        display_df[column] * 100
-    ).round(2).astype(str) + "%"
-
+st.header("📋 Model Results")
 
 st.dataframe(
-    display_df,
-    use_container_width=True,
-    hide_index=True
+    results_df.style.format(
+        {
+            "Train Accuracy": "{:.4f}",
+            "Validation Accuracy": "{:.4f}",
+            "Train F1": "{:.4f}",
+            "Validation F1": "{:.4f}",
+            "Train ROC-AUC": "{:.4f}",
+            "Validation ROC-AUC": "{:.4f}",
+            "Accuracy Gap": "{:.4f}",
+            "F1 Gap": "{:.4f}",
+            "ROC-AUC Gap": "{:.4f}"
+        }
+    ),
+    use_container_width=True
 )
 
 
-st.caption(
-    "Values are mean scores across the cross-validation folds."
-)
+# ==========================================================
+# ACCURACY
+# ==========================================================
 
+st.header("📊 Accuracy Comparison")
 
-# =========================================================
-# ACCURACY GRAPH
-# =========================================================
+fig, ax = plt.subplots(figsize=(10, 5))
 
-st.header("6. Accuracy Comparison")
-
-
-x = np.arange(
-    len(results_df)
-)
-
+x = np.arange(len(results_df))
 width = 0.35
-
-
-fig, ax = plt.subplots(
-    figsize=(11, 5)
-)
-
 
 ax.bar(
     x - width / 2,
@@ -839,7 +639,6 @@ ax.bar(
     label="Training"
 )
 
-
 ax.bar(
     x + width / 2,
     results_df["Validation Accuracy"],
@@ -847,59 +646,28 @@ ax.bar(
     label="Validation"
 )
 
-
-ax.set_xticks(
-    x
-)
-
-
+ax.set_xticks(x)
 ax.set_xticklabels(
     results_df["Model"],
     rotation=20
 )
 
-
-ax.set_ylabel(
-    "Accuracy"
-)
-
-
-ax.set_ylim(
-    0,
-    1.05
-)
-
-
-ax.set_title(
-    "Training vs Validation Accuracy"
-)
-
-
+ax.set_ylabel("Accuracy")
+ax.set_title("Training vs Validation Accuracy")
 ax.legend()
 
-
-ax.grid(
-    axis="y",
-    alpha=0.3
-)
-
+plt.tight_layout()
 
 st.pyplot(fig)
 
-plt.close(fig)
 
+# ==========================================================
+# F1
+# ==========================================================
 
-# =========================================================
-# F1 GRAPH
-# =========================================================
+st.header("📊 F1-Score Comparison")
 
-st.header("7. F1 Score Comparison")
-
-
-fig, ax = plt.subplots(
-    figsize=(11, 5)
-)
-
+fig, ax = plt.subplots(figsize=(10, 5))
 
 ax.bar(
     x - width / 2,
@@ -908,7 +676,6 @@ ax.bar(
     label="Training"
 )
 
-
 ax.bar(
     x + width / 2,
     results_df["Validation F1"],
@@ -916,59 +683,28 @@ ax.bar(
     label="Validation"
 )
 
-
-ax.set_xticks(
-    x
-)
-
-
+ax.set_xticks(x)
 ax.set_xticklabels(
     results_df["Model"],
     rotation=20
 )
 
-
-ax.set_ylabel(
-    "F1 Score"
-)
-
-
-ax.set_ylim(
-    0,
-    1.05
-)
-
-
-ax.set_title(
-    "Training vs Validation F1 Score"
-)
-
-
+ax.set_ylabel("F1 Score")
+ax.set_title("Training vs Validation F1")
 ax.legend()
 
-
-ax.grid(
-    axis="y",
-    alpha=0.3
-)
-
+plt.tight_layout()
 
 st.pyplot(fig)
 
-plt.close(fig)
 
+# ==========================================================
+# ROC-AUC
+# ==========================================================
 
-# =========================================================
-# ROC-AUC GRAPH
-# =========================================================
+st.header("📊 ROC-AUC Comparison")
 
-st.header("8. ROC-AUC Comparison")
-
-
-fig, ax = plt.subplots(
-    figsize=(11, 5)
-)
-
+fig, ax = plt.subplots(figsize=(10, 5))
 
 ax.bar(
     x - width / 2,
@@ -977,7 +713,6 @@ ax.bar(
     label="Training"
 )
 
-
 ax.bar(
     x + width / 2,
     results_df["Validation ROC-AUC"],
@@ -985,237 +720,97 @@ ax.bar(
     label="Validation"
 )
 
-
-ax.set_xticks(
-    x
-)
-
-
+ax.set_xticks(x)
 ax.set_xticklabels(
     results_df["Model"],
     rotation=20
 )
 
-
-ax.set_ylabel(
-    "ROC-AUC"
-)
-
-
-ax.set_ylim(
-    0,
-    1.05
-)
-
-
-ax.set_title(
-    "Training vs Validation ROC-AUC"
-)
-
-
+ax.set_ylabel("ROC-AUC")
+ax.set_title("Training vs Validation ROC-AUC")
 ax.legend()
 
-
-ax.grid(
-    axis="y",
-    alpha=0.3
-)
-
+plt.tight_layout()
 
 st.pyplot(fig)
 
-plt.close(fig)
 
-
-# =========================================================
+# ==========================================================
 # GENERALIZATION GAP
-# =========================================================
+# ==========================================================
 
-st.header("9. Generalization Gap")
+st.header("🔎 Generalization Gap")
 
+fig, ax = plt.subplots(figsize=(10, 5))
 
-gap_df = pd.DataFrame({
-
-    "Model":
-        results_df["Model"],
-
-    "Accuracy Gap":
-        results_df["Train Accuracy"]
-        -
-        results_df["Validation Accuracy"],
-
-    "F1 Gap":
-        results_df["Train F1"]
-        -
-        results_df["Validation F1"],
-
-    "ROC-AUC Gap":
-        results_df["Train ROC-AUC"]
-        -
-        results_df["Validation ROC-AUC"]
-})
-
-
-gap_display = gap_df.copy()
-
-
-for column in [
-    "Accuracy Gap",
-    "F1 Gap",
-    "ROC-AUC Gap"
-]:
-
-    gap_display[column] = (
-        gap_display[column] * 100
-    ).round(2).astype(str) + "%"
-
-
-st.dataframe(
-    gap_display,
-    use_container_width=True,
-    hide_index=True
+ax.bar(
+    results_df["Model"],
+    results_df["Accuracy Gap"]
 )
 
+ax.set_ylabel("Training − Validation Accuracy")
+ax.set_title("Accuracy Generalization Gap")
 
-# =========================================================
+plt.xticks(rotation=20)
+
+plt.tight_layout()
+
+st.pyplot(fig)
+
+
+# ==========================================================
 # ROC CURVES
-# =========================================================
+# ==========================================================
 
-st.header("10. ROC Curves")
+st.header("📈 ROC Curves")
 
-
-fig, ax = plt.subplots(
-    figsize=(10, 6)
-)
-
+fig, ax = plt.subplots(figsize=(9, 7))
 
 for model_name, (
     fpr,
     tpr,
-    roc_auc_value
+    auc
 ) in roc_data.items():
 
     ax.plot(
         fpr,
         tpr,
-        label=f"{model_name} (AUC = {roc_auc_value:.4f})"
+        label=f"{model_name} (AUC={auc:.3f})"
     )
 
 
 ax.plot(
     [0, 1],
     [0, 1],
-    linestyle="--",
-    label="Random Classifier"
+    linestyle="--"
 )
 
+ax.set_xlabel("False Positive Rate")
+ax.set_ylabel("True Positive Rate")
 
-ax.set_xlabel(
-    "False Positive Rate"
-)
-
-
-ax.set_ylabel(
-    "True Positive Rate"
-)
-
-
-ax.set_title(
-    "ROC Curves"
-)
-
+ax.set_title("Cross-Validated ROC Curves")
 
 ax.legend()
 
-
-ax.grid(
-    alpha=0.3
-)
-
+plt.tight_layout()
 
 st.pyplot(fig)
 
-plt.close(fig)
 
+# ==========================================================
+# DOWNLOAD RESULTS
+# ==========================================================
 
-# =========================================================
-# BEST RESULTS
-# =========================================================
+st.header("⬇️ Download Results")
 
-st.header("11. Experiment Summary")
-
-
-accuracy_index = results_df[
-    "Validation Accuracy"
-].idxmax()
-
-
-f1_index = results_df[
-    "Validation F1"
-].idxmax()
-
-
-auc_index = results_df[
-    "Validation ROC-AUC"
-].idxmax()
-
-
-col1, col2, col3 = st.columns(3)
-
-
-with col1:
-
-    st.metric(
-        "Highest Validation Accuracy",
-        results_df.loc[
-            accuracy_index,
-            "Model"
-        ],
-        f"{results_df.loc[accuracy_index, 'Validation Accuracy'] * 100:.2f}%"
-    )
-
-
-with col2:
-
-    st.metric(
-        "Highest Validation F1",
-        results_df.loc[
-            f1_index,
-            "Model"
-        ],
-        f"{results_df.loc[f1_index, 'Validation F1'] * 100:.2f}%"
-    )
-
-
-with col3:
-
-    st.metric(
-        "Highest Validation ROC-AUC",
-        results_df.loc[
-            auc_index,
-            "Model"
-        ],
-        f"{results_df.loc[auc_index, 'Validation ROC-AUC'] * 100:.2f}%"
-    )
-
-
-# =========================================================
-# DOWNLOAD
-# =========================================================
-
-st.divider()
-
-st.header("12. Download Results")
-
-
-csv_results = results_df.to_csv(
+csv = results_df.to_csv(
     index=False
 ).encode("utf-8")
 
 
 st.download_button(
-    "⬇️ Download Experiment Results",
-    data=csv_results,
-    file_name="model_comparison_results.csv",
+    "Download Experiment Results",
+    data=csv,
+    file_name="loan_experiment_results.csv",
     mime="text/csv"
 )
