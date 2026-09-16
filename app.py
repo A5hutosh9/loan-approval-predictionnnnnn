@@ -1,7 +1,10 @@
 import streamlit as st
 
+from utils import load_repository_dataset, show_dataset_expander
+
+
 # =========================================================
-# PAGE CONFIGURATION
+# PAGE CONFIG
 # =========================================================
 
 st.set_page_config(
@@ -10,19 +13,34 @@ st.set_page_config(
     layout="wide"
 )
 
+
 # =========================================================
-# HOME
+# LOAD DATASET
 # =========================================================
 
-st.title("🏦 Loan Approval Prediction")
-st.subheader("Bagging vs Boosting")
+df = load_repository_dataset()
+
+
+# =========================================================
+# HOME PAGE
+# =========================================================
+
+st.title("🏦 Loan Approval Prediction: Bagging vs Boosting")
+
+st.subheader(
+    "Ensemble Learning Based Loan Approval System"
+)
 
 st.write(
-    "An ensemble learning based project for predicting loan approval "
-    "and comparing Bagging and Boosting techniques."
+    """
+    This project compares Bagging and Boosting ensemble learning
+    techniques for loan approval prediction. It evaluates multiple
+    machine learning models using Accuracy, F1 Score and ROC-AUC.
+    """
 )
 
 st.divider()
+
 
 # =========================================================
 # PROJECT OVERVIEW
@@ -30,68 +48,51 @@ st.divider()
 
 st.header("Project Overview")
 
-st.write(
-    """
-    This project investigates how ensemble learning techniques can
-    improve loan approval prediction. A Decision Tree is used as a
-    baseline and is compared with Bagging, Random Forest, AdaBoost,
-    and Gradient Boosting.
-    """
-)
-
-# =========================================================
-# PROJECT INFORMATION
-# =========================================================
-
 col1, col2, col3 = st.columns(3)
 
 with col1:
     st.metric(
-        "Dataset",
-        "4,269 Applications"
-    )
-
-with col2:
-    st.metric(
-        "Models",
+        "Models Compared",
         "5"
     )
 
-with col3:
+with col2:
     st.metric(
         "Validation",
         "5-Fold CV"
     )
 
-st.divider()
+with col3:
 
-# =========================================================
-# OBJECTIVES
-# =========================================================
+    if df is not None:
+        st.metric(
+            "Dataset Rows",
+            df.shape[0]
+        )
+    else:
+        st.metric(
+            "Dataset Rows",
+            "N/A"
+        )
 
-st.header("Project Objectives")
 
 st.write(
     """
-    • Build a Decision Tree baseline
-
-    • Demonstrate overfitting and generalization
-
-    • Apply Bagging and Random Forest
-
-    • Apply AdaBoost and Gradient Boosting
-
-    • Compare Accuracy, F1 Score and ROC-AUC
-
-    • Analyze training vs validation performance
-
-    • Examine fairness across available applicant groups
-
-    • Build a practical loan approval prediction system
+    The project uses a Decision Tree as the baseline and compares
+    Bagging, Random Forest, AdaBoost and Gradient Boosting.
     """
 )
 
+
+# =========================================================
+# DATASET
+# =========================================================
+
+show_dataset_expander(df)
+
+
 st.divider()
+
 
 # =========================================================
 # NAVIGATION
@@ -101,10 +102,17 @@ st.header("Project Sections")
 
 col1, col2, col3 = st.columns(3)
 
+
 with col1:
 
+    st.subheader("📊 Bagging vs Boosting")
+
+    st.write(
+        "View the project's model comparison and evaluation results."
+    )
+
     if st.button(
-        "📊 Bagging vs Boosting",
+        "Open Model Comparison",
         use_container_width=True
     ):
 
@@ -115,8 +123,14 @@ with col1:
 
 with col2:
 
+    st.subheader("🧪 Run Experiment")
+
+    st.write(
+        "Upload a loan approval CSV and generate new results."
+    )
+
     if st.button(
-        "🧪 Run Experiment",
+        "Open Experiment",
         use_container_width=True
     ):
 
@@ -127,8 +141,14 @@ with col2:
 
 with col3:
 
+    st.subheader("🔮 Loan Prediction")
+
+    st.write(
+        "Enter applicant details and predict loan approval."
+    )
+
     if st.button(
-        "🔮 Loan Prediction",
+        "Open Prediction",
         use_container_width=True
     ):
 
@@ -138,6 +158,7 @@ with col3:
 
 
 st.divider()
+
 
 st.caption(
     "Loan Approval Prediction: Bagging vs Boosting"
