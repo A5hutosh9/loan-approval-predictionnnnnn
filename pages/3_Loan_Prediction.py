@@ -1,9 +1,7 @@
 import streamlit as st
 import pandas as pd
 import joblib
-
 from openai import OpenAI
-
 
 # ==========================================================
 # PAGE CONFIG
@@ -15,76 +13,49 @@ st.set_page_config(
     layout="wide"
 )
 
-
-# ==========================================================
-# PAGE TITLE
-# ==========================================================
-
 st.title("🔮 Loan Prediction")
 
 st.markdown(
     """
-    Enter the applicant's information to predict whether the
+    Enter applicant information to predict whether the
     loan application is likely to be approved.
     """
 )
 
-
 # ==========================================================
-# LOAD ML MODEL
+# LOAD MODEL
 # ==========================================================
 
 try:
-
     model = joblib.load("loan_model.pkl")
-
 except Exception as e:
-
-    st.error(
-        f"Could not load loan_model.pkl: {e}"
-    )
-
+    st.error(f"Could not load loan_model.pkl: {e}")
     st.stop()
 
-
 # ==========================================================
-# APPLICANT INFORMATION
+# APPLICANT INPUT
 # ==========================================================
 
 st.header("👤 Applicant Information")
 
-
 col1, col2, col3 = st.columns(3)
 
-
-# ==========================================================
-# COLUMN 1
-# ==========================================================
-
 with col1:
-
     no_of_dependents = st.number_input(
         "Number of Dependents",
         min_value=0,
         max_value=20,
-        value=2,
-        step=1
+        value=2
     )
 
     education = st.selectbox(
         "Education",
-        [
-            "Graduate",
-            "Not Graduate"
-        ]
+        ["Graduate", "Not Graduate"]
     )
 
     self_employed = st.selectbox(
         "Self Employed",
-        [
-            "No",
-            "Yes"
-        ]
+        ["No", "Yes"]
     )
 
     income_annum = st.number_input(
@@ -94,13 +65,7 @@ with col1:
         step=10000
     )
 
-
-# ==========================================================
-# COLUMN 2
-# ==========================================================
-
 with col2:
-
     loan_amount = st.number_input(
         "Loan Amount",
         min_value=0,
@@ -112,16 +77,14 @@ with col2:
         "Loan Term (Years)",
         min_value=1,
         max_value=50,
-        value=15,
-        step=1
+        value=15
     )
 
     cibil_score = st.number_input(
         "CIBIL Score",
         min_value=0,
         max_value=900,
-        value=760,
-        step=1
+        value=760
     )
 
     residential_assets_value = st.number_input(
@@ -131,13 +94,7 @@ with col2:
         step=10000
     )
 
-
-# ==========================================================
-# COLUMN 3
-# ==========================================================
-
 with col3:
-
     commercial_assets_value = st.number_input(
         "Commercial Assets Value",
         min_value=0,
@@ -159,9 +116,8 @@ with col3:
         step=10000
     )
 
-
 # ==========================================================
-# PREDICTION BUTTON
+# PREDICT
 # ==========================================================
 
 st.markdown("---")
@@ -172,105 +128,49 @@ predict_button = st.button(
     use_container_width=True
 )
 
-
-# ==========================================================
-# PREDICTION
-# ==========================================================
-
 if predict_button:
 
-    # ------------------------------------------------------
-    # CREATE INPUT DATAFRAME
-    # ------------------------------------------------------
-
     input_data = pd.DataFrame({
-
-        "no_of_dependents": [
-            no_of_dependents
-        ],
-
-        "education": [
-            education
-        ],
-
-        "self_employed": [
-            self_employed
-        ],
-
-        "income_annum": [
-            income_annum
-        ],
-
-        "loan_amount": [
-            loan_amount
-        ],
-
-        "loan_term": [
-            loan_term
-        ],
-
-        "cibil_score": [
-            cibil_score
-        ],
-
-        "residential_assets_value": [
-            residential_assets_value
-        ],
-
-        "commercial_assets_value": [
-            commercial_assets_value
-        ],
-
-        "luxury_assets_value": [
-            luxury_assets_value
-        ],
-
-        "bank_asset_value": [
-            bank_asset_value
-        ]
+        "no_of_dependents": [no_of_dependents],
+        "education": [education],
+        "self_employed": [self_employed],
+        "income_annum": [income_annum],
+        "loan_amount": [loan_amount],
+        "loan_term": [loan_term],
+        "cibil_score": [cibil_score],
+        "residential_assets_value": [residential_assets_value],
+        "commercial_assets_value": [commercial_assets_value],
+        "luxury_assets_value": [luxury_assets_value],
+        "bank_asset_value": [bank_asset_value]
     })
 
-
     # ------------------------------------------------------
-    # RUN MODEL
+    # ML PREDICTION
     # ------------------------------------------------------
 
     try:
-
-        prediction = model.predict(
-            input_data
-        )[0]
-
-        probability = model.predict_proba(
-            input_data
-        )[0][1]
-
+        prediction = model.predict(input_data)[0]
+        probability = model.predict_proba(input_data)[0][1]
 
     except Exception as e:
-
-        st.error(
-            f"Prediction failed: {e}"
-        )
-
+        st.error(f"Prediction failed: {e}")
         st.stop()
-
 
     # ------------------------------------------------------
     # RISK LEVEL
     # ------------------------------------------------------
 
     if probability >= 0.80:
-
         risk = "Low Risk"
-
     elif probability >= 0.60:
-
         risk = "Medium Risk"
-
     else:
-
         risk = "High Risk"
 
+    prediction_text = (
+        "Approved" if prediction == 1
+        else "Rejected"
+    )
 
     # ======================================================
     # RESULT
@@ -278,323 +178,179 @@ if predict_button:
 
     st.header("📋 Prediction Result")
 
+    result1, result2, result3 = st.columns(3)
 
-    result_col1, result_col2, result_col3 = st.columns(3)
-
-
-    # ------------------------------------------------------
-    # RESULT
-    # ------------------------------------------------------
-
-    with result_col1:
-
+    with result1:
         if prediction == 1:
-
-            st.success(
-                "✅ LOAN APPROVED"
-            )
-
+            st.success("✅ LOAN APPROVED")
         else:
+            st.error("❌ LOAN REJECTED")
 
-            st.error(
-                "❌ LOAN REJECTED"
-            )
-
-
-    # ------------------------------------------------------
-    # PROBABILITY
-    # ------------------------------------------------------
-
-    with result_col2:
-
+    with result2:
         st.metric(
             "Approval Probability",
             f"{probability * 100:.1f}%"
         )
 
-
-    # ------------------------------------------------------
-    # RISK
-    # ------------------------------------------------------
-
-    with result_col3:
-
+    with result3:
         st.metric(
             "Risk Level",
             risk
         )
 
-
     # ======================================================
     # APPLICANT DETAILS
     # ======================================================
 
-    with st.expander(
-        "📋 View Applicant Details"
-    ):
-
+    with st.expander("📋 View Applicant Details"):
         st.dataframe(
             input_data,
             use_container_width=True
         )
 
-
     # ======================================================
-    # MODEL EXPLANATION
+    # AI EXPLANATION
     # ======================================================
 
     st.markdown("---")
-
     st.header("🤖 AI Explanation of This Prediction")
 
-    st.markdown(
-        """
-        The AI explanation describes how the trained machine
-        learning model arrived at this prediction using the
-        applicant's input values and model probability.
-        """
+    st.caption(
+        "The ML model makes the prediction. OpenAI is used only "
+        "to explain the prediction in simple language."
     )
 
+    try:
+        api_key = st.secrets["OPENAI_API_KEY"]
 
-    # ======================================================
-    # OPENAI API
-    # ======================================================
+    except KeyError:
+        st.error(
+            "OPENAI_API_KEY is missing from Streamlit Secrets."
+        )
+        st.stop()
 
     try:
-
-        # Read API key from Streamlit Secrets
-        api_key = st.secrets["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"]
-
-        client = OpenAI(
-            api_key=api_key
-        )
-
-
-        # --------------------------------------------------
-        # PREDICTION TEXT
-        # --------------------------------------------------
-
-        prediction_text = (
-            "Approved"
-            if prediction == 1
-            else "Rejected"
-        )
-
-
-        # --------------------------------------------------
-        # AI PROMPT
-        # --------------------------------------------------
+        client = OpenAI(api_key=api_key)
 
         prompt = f"""
-You are explaining a college machine-learning project.
+You are explaining a college machine-learning project called
+"Loan Approval Prediction: Bagging vs Boosting".
 
-The project is:
-"Loan Approval Prediction: Bagging vs Boosting"
-
-A trained machine-learning model has already made the
-following prediction.
+The trained ML model produced this result:
 
 Prediction: {prediction_text}
+Approval probability: {probability * 100:.1f}%
+Project risk level: {risk}
 
-Approval probability:
-{probability * 100:.1f}%
+Applicant details:
+- Number of dependents: {no_of_dependents}
+- Education: {education}
+- Self employed: {self_employed}
+- Annual income: ₹{income_annum:,}
+- Loan amount: ₹{loan_amount:,}
+- Loan term: {loan_term} years
+- CIBIL score: {cibil_score}
+- Residential assets: ₹{residential_assets_value:,}
+- Commercial assets: ₹{commercial_assets_value:,}
+- Luxury assets: ₹{luxury_assets_value:,}
+- Bank assets: ₹{bank_asset_value:,}
 
-Project risk level:
-{risk}
-
-Applicant information:
-
-Number of dependents:
-{no_of_dependents}
-
-Education:
-{education}
-
-Self employed:
-{self_employed}
-
-Annual income:
-₹{income_annum:,}
-
-Loan amount:
-₹{loan_amount:,}
-
-Loan term:
-{loan_term} years
-
-CIBIL score:
-{cibil_score}
-
-Residential assets:
-₹{residential_assets_value:,}
-
-Commercial assets:
-₹{commercial_assets_value:,}
-
-Luxury assets:
-₹{luxury_assets_value:,}
-
-Bank assets:
-₹{bank_asset_value:,}
-
-
-Explain the result in simple language for a college
-presentation.
+Write a short explanation for a college project demonstration.
 
 Requirements:
-
-1. Start with one short sentence explaining the prediction.
-2. Mention the most important applicant factors visible
-   from the supplied information.
-3. Explain why the probability is high or low in simple terms.
-4. Briefly explain the process:
-   applicant data → trained ML model → probability → prediction.
-5. Do NOT invent model rules or claim that a specific feature
-   caused the decision unless the supplied information supports it.
-6. Do NOT say that this is an actual bank decision.
-7. Keep the explanation between 100 and 150 words.
-8. Use simple student-friendly English.
+1. Explain the prediction in simple English.
+2. Mention important applicant factors visible in the data.
+3. Explain what the probability means.
+4. Explain the process:
+   applicant data -> trained ML model -> probability -> prediction.
+5. Do not invent model rules.
+6. Do not claim that a feature definitely caused the prediction.
+7. Do not describe this as an actual bank decision.
+8. Keep it between 100 and 150 words.
 """
 
-
-        # --------------------------------------------------
-        # CALL OPENAI
-        # --------------------------------------------------
-
-        with st.spinner(
-            "Generating AI explanation..."
-        ):
+        with st.spinner("Generating AI explanation..."):
 
             response = client.responses.create(
-
                 model="gpt-5.6-luna",
-
                 input=prompt
             )
 
-
-        # --------------------------------------------------
-        # DISPLAY AI RESPONSE
-        # --------------------------------------------------
-
-        explanation = response.output_text
-
-
-        st.markdown(
-            explanation
-        )
-
-
-        # --------------------------------------------------
-        # DISCLAIMER
-        # --------------------------------------------------
+        st.markdown(response.output_text)
 
         st.caption(
-            "AI-generated explanation of the ML prediction. "
-            "It is for project demonstration and does not "
-            "represent an actual banking decision."
+            "AI-generated explanation for project demonstration. "
+            "It does not represent an actual banking decision."
         )
-
-
-    # ======================================================
-    # API ERROR
-    # ======================================================
-
-    except KeyError:
-
-        st.warning(
-            """
-            OpenAI API key is not configured.
-
-            Add your API key to Streamlit Secrets as:
-
-            OPENAI_API_KEY = "your-api-key"
-            """
-        )
-
 
     except Exception as e:
-
         st.error(
             f"AI explanation could not be generated: {e}"
         )
 
-
     # ======================================================
-    # HOW THE SYSTEM WORKS
+    # HOW IT WORKS
     # ======================================================
 
     st.markdown("---")
-
     st.header("⚙️ How This Prediction Works")
 
     step1, step2, step3, step4 = st.columns(4)
 
-
     with step1:
-
         st.markdown(
             """
             ### 1️⃣ Input
 
-            Applicant information is entered into the
-            Streamlit application.
+            Applicant information is entered into the app.
             """
         )
-
 
     with step2:
-
         st.markdown(
             """
-            ### 2️⃣ ML Model
+            ### 2️⃣ Model
 
-            The trained loan approval model processes
-            the applicant features.
+            The trained ML model processes the features.
             """
         )
 
-
     with step3:
-
         st.markdown(
             """
             ### 3️⃣ Probability
 
-            The model produces an approval probability.
+            The model calculates the probability of approval.
             """
         )
-
 
     with step4:
-
         st.markdown(
             """
-            ### 4️⃣ Result
+            ### 4️⃣ Prediction
 
-            The application is classified as Approved
-            or Rejected.
+            The probability is converted into the final
+            Approved/Rejected prediction.
             """
         )
 
-
     # ======================================================
-    # PROJECT RISK THRESHOLD
+    # RISK EXPLANATION
     # ======================================================
 
-    with st.expander(
-        "ℹ️ About the Risk Level"
-    ):
+    with st.expander("ℹ️ About the Risk Level"):
 
         st.markdown(
             """
             The project uses these demonstration thresholds:
 
-            - **80% or above:** Low Risk
-            - **60%–79.9%:** Medium Risk
-            - **Below 60%:** High Risk
+            **80% or above** → Low Risk
 
-            These are project-defined thresholds and are not
-            official banking standards.
+            **60%–79.9%** → Medium Risk
+
+            **Below 60%** → High Risk
+
+            These thresholds are defined for this project and
+            are not official banking standards.
             """
         )
