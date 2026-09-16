@@ -30,18 +30,15 @@ st.sidebar.info(
 
     Loan Approval Prediction:
     Bagging vs Boosting
-    )
+    
 st.sidebar.markdown(
     '<p style="color:#D4A017; font-size:18px; font-weight:600;">By- Ashutosh Paltasingh</p>',
     unsafe_allow_html=True
-)
+
 
     """
 )
-st.sidebar.markdown(
-    '<p style="color:#D4A017; font-size:18px; font-weight:600;">By- Ashutosh Paltasingh</p>',
-    unsafe_allow_html=True
-)
+
 
 
 # -----------------------------
