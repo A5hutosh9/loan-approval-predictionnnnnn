@@ -39,10 +39,6 @@ except Exception as error:
 # DATASET
 # =========================================================
 
-df = load_repository_dataset()
-
-show_dataset_expander(df)
-
 
 st.divider()
 
