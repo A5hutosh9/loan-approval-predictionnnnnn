@@ -43,7 +43,7 @@ Bagging vs Boosting
 </p>
 
 <p style="color:#B8860B;font-size:17px;font-weight:600;margin:0;">
-By- Ashutosh Paltasingh
+By - Ashutosh Paltasingh
 </p>
 
 </div>
