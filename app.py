@@ -30,24 +30,8 @@ st.sidebar.info(
 
     Loan Approval Prediction:
     Bagging vs Boosting
+    By- Ashutosh Paltasingh
     """
-)
-
-st.sidebar.markdown("---")
-
-st.sidebar.markdown(
-    """
-    ### Navigation
-
-    Use the pages on the left to explore:
-
-    - Bagging vs Boosting
-    - Run Experiment
-    - Loan Prediction
-    - Explain Prediction
-    - Fairness Analysis
-    """
-)
 
 
 # -----------------------------
