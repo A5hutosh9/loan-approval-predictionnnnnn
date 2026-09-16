@@ -2,9 +2,11 @@ import streamlit as st
 import pandas as pd
 import joblib
 
+from utils import load_repository_dataset, show_dataset_expander
+
 
 # =========================================================
-# PAGE CONFIGURATION
+# PAGE CONFIG
 # =========================================================
 
 st.set_page_config(
@@ -24,15 +26,25 @@ try:
         "loan_model.pkl"
     )
 
-except Exception as e:
+except Exception as error:
 
     st.error(
-        "Could not load loan_model.pkl"
+        f"Could not load loan_model.pkl: {error}"
     )
 
-    st.exception(e)
-
     st.stop()
+
+
+# =========================================================
+# DATASET
+# =========================================================
+
+df = load_repository_dataset()
+
+show_dataset_expander(df)
+
+
+st.divider()
 
 
 # =========================================================
@@ -42,8 +54,9 @@ except Exception as e:
 st.title("🔮 Loan Approval Prediction")
 
 st.write(
-    "Enter applicant information to predict loan approval."
+    "Enter applicant details to predict loan approval."
 )
+
 
 st.divider()
 
@@ -63,7 +76,7 @@ with col1:
     no_of_dependents = st.number_input(
         "Number of Dependents",
         min_value=0,
-        max_value=10,
+        max_value=20,
         value=2
     )
 
@@ -103,7 +116,7 @@ with col1:
     loan_term = st.number_input(
         "Loan Term (years)",
         min_value=1,
-        max_value=40,
+        max_value=50,
         value=15
     )
 
@@ -153,10 +166,13 @@ with col2:
 st.divider()
 
 
-if st.button(
+predict_button = st.button(
     "🔮 Predict Loan Approval",
     type="primary"
-):
+)
+
+
+if predict_button:
 
     applicant = pd.DataFrame({
 
@@ -195,10 +211,6 @@ if st.button(
     })
 
 
-    # =====================================================
-    # PREDICTION
-    # =====================================================
-
     try:
 
         prediction = model.predict(
@@ -211,19 +223,17 @@ if st.button(
         )[0][1]
 
 
-    except Exception as e:
+    except Exception as error:
 
         st.error(
-            "Prediction failed."
+            f"Prediction failed: {error}"
         )
-
-        st.exception(e)
 
         st.stop()
 
 
     # =====================================================
-    # RISK LEVEL
+    # RISK
     # =====================================================
 
     if probability >= 0.80:
@@ -241,22 +251,7 @@ if st.button(
 
     st.divider()
 
-
-    # =====================================================
-    # RESULT
-    # =====================================================
-
-    if prediction == 1:
-
-        st.success(
-            "## ✅ LOAN APPROVED"
-        )
-
-    else:
-
-        st.error(
-            "## ❌ LOAN REJECTED"
-        )
+    st.header("Prediction Result")
 
 
     col1, col2 = st.columns(2)
@@ -264,21 +259,42 @@ if st.button(
 
     with col1:
 
+        if prediction == 1:
+
+            st.success(
+                "## ✅ LOAN APPROVED"
+            )
+
+        else:
+
+            st.error(
+                "## ❌ LOAN REJECTED"
+            )
+
+
+    with col2:
+
         st.metric(
             "Approval Probability",
             f"{probability * 100:.2f}%"
         )
 
 
-    with col2:
-
-        st.metric(
-            "Risk Level",
-            risk
-        )
-
-
     st.info(
-        "Risk thresholds used here are project-defined "
-        "demonstration thresholds, not official banking standards."
+        f"Risk Level: **{risk}**"
     )
+
+
+    # =====================================================
+    # APPLICANT SUMMARY
+    # =====================================================
+
+    with st.expander(
+        "View Submitted Applicant Data"
+    ):
+
+        st.dataframe(
+            applicant,
+            use_container_width=True,
+            hide_index=True
+        )
