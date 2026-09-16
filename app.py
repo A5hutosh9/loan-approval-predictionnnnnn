@@ -32,6 +32,7 @@ st.sidebar.info(
     Bagging vs Boosting
     By- Ashutosh Paltasingh
     """
+)
 
 
 # -----------------------------
