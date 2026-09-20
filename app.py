@@ -1,154 +1,55 @@
 import streamlit as st
 from utils import load_repository_dataset, show_dataset_expander
-
+from ui_theme import apply_theme, sidebar_brand, hero
 
 st.set_page_config(
-    page_title="Loan Approval Prediction",
-    page_icon="🏦",
-    layout="wide"
+    page_title="Bharat Loan AI",
+    page_icon="🇮🇳",
+    layout="wide",
+    initial_sidebar_state="expanded",
 )
 
+apply_theme()
+sidebar_brand()
 
-# -----------------------------
-# LOAD DATASET
-# -----------------------------
+st.sidebar.markdown("### Navigation")
+st.sidebar.caption("Academic ML project • not a real bank")
+st.sidebar.markdown("---")
+st.sidebar.markdown(
+    "<div style='color:#f0c45c;font-weight:700;'>By- Ashutosh Paltasingh</div>",
+    unsafe_allow_html=True,
+)
+
+hero(
+    "Loan Approval Prediction",
+    "Using ensemble learning to analyse loan applications"
+)
 
 df = load_repository_dataset()
 
+st.markdown(
+    "<div class='section-title'>🏛️ Project Overview</div><div class='section-subtitle'>A banking-style interface for your existing machine-learning project.</div>",
+    unsafe_allow_html=True,
+)
 
-# ==========================================================
-# SIDEBAR
-# ==========================================================
+cols = st.columns(4)
+rows = df.shape[0] if df is not None else 4269
+cols[0].markdown(f"<div class='metric-card'><div class='metric-label'>Dataset records</div><div class='metric-value'>{rows:,}</div><div class='metric-note'>Loan applications</div></div>", unsafe_allow_html=True)
+cols[1].markdown("<div class='metric-card'><div class='metric-label'>Models</div><div class='metric-value'>5</div><div class='metric-note'>Tree + ensemble models</div></div>", unsafe_allow_html=True)
+cols[2].markdown("<div class='metric-card'><div class='metric-label'>Ensemble families</div><div class='metric-value'>2</div><div class='metric-note'>Bagging & Boosting</div></div>", unsafe_allow_html=True)
+cols[3].markdown("<div class='metric-card'><div class='metric-label'>AI layer</div><div class='metric-value'>Gemini</div><div class='metric-note'>Prediction explanation</div></div>", unsafe_allow_html=True)
 
-st.sidebar.title("🏦 Loan Approval")
+st.markdown("<div class='section-card'><div class='section-title'>🎯 What this application does</div><div class='section-subtitle'>The interface wraps your existing Colab model into an interactive banking-style application.</div><ul><li>Compare Decision Tree, Bagging, Random Forest, AdaBoost and Gradient Boosting.</li><li>Run new experiments on uploaded loan datasets.</li><li>Generate individual loan predictions from the trained model.</li><li>Show model-level feature importance and fairness analysis.</li><li>Use Gemini to explain a prediction in simple language.</li></ul></div>", unsafe_allow_html=True)
 
-st.sidebar.markdown("---")
+if df is not None:
+    show_dataset_expander(df, "📁 Repository Dataset")
 
-
-# ==========================================================
-# PROJECT INFORMATION BOX
-# ==========================================================
-
-st.sidebar.markdown(
-    """
-<div style="background-color:#2f4a67;padding:18px;border-radius:10px;">
-
-<p style="color:#2196F3;font-size:20px;font-weight:700;margin:0 0 20px 0;">
-Machine Learning Project
-</p>
-
-<p style="color:#2196F3;font-size:18px;line-height:1.6;margin:0 0 20px 0;">
-Loan Approval Prediction:<br>
-Bagging vs Boosting
-</p>
-
-<p style="color:#B8860B;font-size:17px;font-weight:600;margin:0;">
-By - Ashutosh Paltasingh
-</p>
-
+st.markdown("""
+<div class='workflow'>
+  <div class='workflow-step'><div class='workflow-num'>1</div><div class='workflow-title'>Applicant Input</div><div class='workflow-text'>Enter personal, financial and asset information.</div></div>
+  <div class='workflow-step'><div class='workflow-num'>2</div><div class='workflow-title'>ML Processing</div><div class='workflow-text'>The trained ensemble pipeline processes the inputs.</div></div>
+  <div class='workflow-step'><div class='workflow-num'>3</div><div class='workflow-title'>Prediction</div><div class='workflow-text'>The system returns approval probability and risk level.</div></div>
+  <div class='workflow-step'><div class='workflow-num'>4</div><div class='workflow-title'>AI Explanation</div><div class='workflow-text'>Gemini explains the model result in simple terms.</div></div>
 </div>
-""",
-    unsafe_allow_html=True
-)
-
-
-st.sidebar.markdown("---")
-# -----------------------------
-# HOME
-# -----------------------------
-
-st.title("🏦 Loan Approval Prediction")
-
-st.subheader("Bagging vs Boosting")
-
-st.markdown(
-    """
-    This project uses machine learning ensemble techniques to predict
-    whether a loan application will be **Approved** or **Rejected**.
-    """
-)
-
-
-# -----------------------------
-# PROJECT OVERVIEW
-# -----------------------------
-
-st.markdown("## 📌 Project Overview")
-
-col1, col2, col3, col4 = st.columns(4)
-
-if df is not None:
-
-    with col1:
-        st.metric("Dataset Rows", f"{df.shape[0]:,}")
-
-    with col2:
-        st.metric("Features", df.shape[1] - 2)
-
-    with col3:
-        st.metric("Approved", "2,656")
-
-    with col4:
-        st.metric("Rejected", "1,613")
-
-
-# -----------------------------
-# OBJECTIVE
-# -----------------------------
-
-st.markdown("## 🎯 Objective")
-
-st.markdown(
-    """
-    - Predict loan approval using applicant information.
-    - Compare **Bagging** and **Boosting** ensemble methods.
-    - Evaluate models using Accuracy, F1-score and ROC-AUC.
-    - Study model generalization using cross-validation.
-    - Analyse feature importance.
-    - Provide individual loan predictions.
-    - Examine fairness across available applicant groups.
-    """
-)
-
-
-# -----------------------------
-# MODELS
-# -----------------------------
-
-st.markdown("## 🤖 Models Used")
-
-col1, col2, col3, col4, col5 = st.columns(5)
-
-with col1:
-    st.info("Decision Tree")
-
-with col2:
-    st.info("Bagging")
-
-with col3:
-    st.info("Random Forest")
-
-with col4:
-    st.info("AdaBoost")
-
-with col5:
-    st.info("Gradient Boosting")
-
-
-# -----------------------------
-# DATASET
-# -----------------------------
-
-if df is not None:
-    show_dataset_expander(df, "📁 Dataset")
-
-
-# -----------------------------
-# FOOTER
-# -----------------------------
-
-st.markdown("---")
-
-st.caption(
-    "Loan Approval Prediction • Machine Learning Project"
-)
+<div class='footer-card'>🇮🇳 <b>Bharat Loan AI</b> • Academic machine-learning project • Developed by Ashutosh Paltasingh • B.Tech CSE (AIML)</div>
+""", unsafe_allow_html=True)
