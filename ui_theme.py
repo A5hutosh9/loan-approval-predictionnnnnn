@@ -967,51 +967,66 @@ def apply_theme():
 
 
         /* =====================================================
-           BUTTONS
+           BUTTONS AND FORM CONTROL CONTRAST
         ===================================================== */
 
         .stButton > button {
-
-            border-radius:
-                11px;
-
-            min-height:
-                44px;
-
-            font-weight:
-                700;
-
-            border:
-                1px solid
-                #cad9e7;
+            min-height: 44px;
+            border: 2px solid #145db5 !important;
+            border-radius: 11px;
+            background: #edf5ff !important;
+            color: #082746 !important;
+            font-weight: 700;
         }
 
+        .stButton > button:hover {
+            background: #dcecff !important;
+            border-color: #0d4e8e !important;
+        }
 
         div.stButton > button[kind="primary"] {
-
-            background:
-                linear-gradient(
-                    90deg,
-                    #145db5,
-                    #2378c9
-                );
-
-            color:
-                #ffffff;
-
-            border:
-                none;
+            background: linear-gradient(90deg, #082746, #145db5) !important;
+            border-color: #082746 !important;
+            color: #ffffff !important;
+            box-shadow: 0 4px 12px rgba(8, 39, 70, 0.22);
         }
 
-
         div.stButton > button[kind="primary"]:hover {
+            background: linear-gradient(90deg, #061d35, #0d4e8e) !important;
+            border-color: #061d35 !important;
+        }
 
-            background:
-                linear-gradient(
-                    90deg,
-                    #0e4fa0,
-                    #1c69b4
-                );
+        div.stButton > button[kind="primary"] * {
+            color: #ffffff !important;
+        }
+
+        /* Streamlit's current number-input and selectbox controls. */
+        [data-testid="stNumberInputContainer"],
+        .react-aria-ComboBox [role="group"] {
+            background: #ffffff !important;
+            border: 2px solid #145db5 !important;
+            border-radius: 10px !important;
+        }
+
+        [data-testid="stNumberInputField"],
+        .react-aria-ComboBox input[role="combobox"],
+        [data-testid="stNumberInputStepUp"],
+        [data-testid="stNumberInputStepDown"],
+        .react-aria-ComboBox button[aria-haspopup="listbox"] {
+            color: #082746 !important;
+        }
+
+        [data-testid="stNumberInputStepUp"],
+        [data-testid="stNumberInputStepDown"],
+        .react-aria-ComboBox button[aria-haspopup="listbox"] {
+            background: #dcecff !important;
+            border-left: 1px solid #145db5 !important;
+        }
+
+        [data-testid="stNumberInputStepUp"]:hover,
+        [data-testid="stNumberInputStepDown"]:hover,
+        .react-aria-ComboBox button[aria-haspopup="listbox"]:hover {
+            background: #c7e0fa !important;
         }
 
 
