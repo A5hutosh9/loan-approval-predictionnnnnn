@@ -1,10 +1,14 @@
 """Live Gemini explanation helper for experiment results.
 
-The helper is intentionally stateful so clicking the AI button does not erase the
-experiment output on Streamlit reruns.
+Uses Gemini's Interactions API, which is the current recommended interface.
+The generated explanation is stored in Streamlit session state so a rerun does
+not erase it.
 """
 import os
 import streamlit as st
+
+
+MODEL_NAME = "gemini-3.6-flash"
 
 
 def _get_api_key():
@@ -19,10 +23,10 @@ def _get_api_key():
 def render_live_experiment_explanation(
     results_df, dataset_rows, dataset_columns, target_column
 ):
-    """Render a persistent, live Gemini explanation of the current run."""
+    """Render a live Gemini explanation of the current experiment."""
     st.subheader("🤖 Live AI Results Explanation")
     st.caption(
-        "AI interpretation of the metrics from this run; not a lending decision."
+        "AI interpretation of this experiment's metrics; not a lending decision."
     )
 
     api_key = _get_api_key()
@@ -33,10 +37,6 @@ def render_live_experiment_explanation(
         )
         return
 
-    # Keep the generated text in session state. Streamlit reruns the script
-    # whenever a button is clicked, so without this the response disappears.
-    explanation = st.session_state.get("live_experiment_explanation")
-
     if st.button(
         "✨ Generate AI Explanation",
         key="generate_live_experiment_explanation",
@@ -46,10 +46,8 @@ def render_live_experiment_explanation(
         try:
             from google import genai
 
-            with st.spinner("Generating AI explanation…"):
-                client = genai.Client(api_key=api_key)
-                metrics_csv = results_df.to_csv(index=False)
-                prompt = f"""You are a careful machine-learning tutor. Explain the following experiment results in clear, concise language for a college project presentation.
+            metrics_csv = results_df.to_csv(index=False)
+            prompt = f"""You are a careful machine-learning tutor. Explain the following experiment results in clear, concise language for a college project presentation.
 
 Dataset dimensions: {dataset_rows} rows × {dataset_columns} columns
 Target column: {target_column}
@@ -68,18 +66,41 @@ Use only the supplied values. Do not invent causes or numbers. Do not claim that
 one model is universally best. State that the findings depend on this dataset
 and validation setup and are not real-world lending guarantees."""
 
-                response = client.models.generate_content(
-                    model="gemini-2.5-flash",
-                    contents=prompt,
+            with st.spinner("Generating AI explanation with Gemini 3.6 Flash…"):
+                client = genai.Client(api_key=api_key)
+                interaction = client.interactions.create(
+                    model=MODEL_NAME,
+                    input=prompt,
                 )
-                explanation = getattr(response, "text", None)
 
-                if not explanation:
-                    raise RuntimeError(
-                        "Gemini returned an empty response. Check the API key and model availability."
-                    )
+            explanation = getattr(interaction, "output_text", None)
 
-                st.session_state["live_experiment_explanation"] = explanation
+            # Defensive fallback for SDK response objects that expose output
+            # blocks but not output_text.
+            if not explanation:
+                output = getattr(interaction, "output", None)
+                if output:
+                    parts = []
+                    for item in output:
+                        text_value = getattr(item, "text", None)
+                        if text_value:
+                            parts.append(text_value)
+                        content = getattr(item, "content", None)
+                        if content:
+                            for block in content:
+                                block_text = getattr(block, "text", None)
+                                if block_text:
+                                    parts.append(block_text)
+                    explanation = "
+".join(parts).strip() if parts else None
+
+            if not explanation:
+                raise RuntimeError(
+                    "Gemini returned an empty response. Check the API key, "
+                    "SDK version, and model availability."
+                )
+
+            st.session_state["live_experiment_explanation"] = explanation
 
         except Exception as exc:
             st.error(f"Could not generate the AI explanation: {exc}")
