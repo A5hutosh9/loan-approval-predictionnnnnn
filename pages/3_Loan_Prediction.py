@@ -4,681 +4,175 @@ import joblib
 import pandas as pd
 import streamlit as st
 from google import genai
+from google.genai import types
 
-
-# ==========================================================
-# PAGE CONFIG
-# ==========================================================
+from ui_theme import apply_theme, sidebar_brand, hero
 
 st.set_page_config(
-    page_title="Loan Prediction",
+    page_title="Loan Prediction | Bharat Loan AI",
     page_icon="🔮",
-    layout="wide"
+    layout="wide",
 )
 
+apply_theme()
+sidebar_brand()
 
-# ==========================================================
-# TITLE
-# ==========================================================
-
-st.title("🔮 Loan Prediction")
-
-st.markdown(
-    """
-    Enter applicant information to predict whether the
-    loan application is likely to be approved.
-    """
+hero(
+    "Loan Approval Prediction",
+    "Enter applicant details and review the model result"
 )
-
-
-# ==========================================================
-# LOAD ML MODEL
-# ==========================================================
 
 try:
     model = joblib.load("loan_model.pkl")
-
 except Exception as e:
     st.error(f"Could not load loan_model.pkl: {e}")
     st.stop()
 
+st.markdown("<div class='section-title'>👤 Applicant Information</div><div class='section-subtitle'>Complete the fields below. The ML model will use the same feature structure as training.</div>", unsafe_allow_html=True)
 
-# ==========================================================
-# GET TOP FEATURE IMPORTANCE
-# ==========================================================
+left, right = st.columns([1.55, 1], gap="large")
 
-def get_top_features(model, top_n=5):
+with left:
+    st.markdown("<div class='section-card'>", unsafe_allow_html=True)
+    st.markdown("<div class='section-title'>Personal & Financial Details</div>", unsafe_allow_html=True)
+    c1, c2, c3 = st.columns(3)
+    with c1:
+        no_of_dependents = st.number_input("Number of Dependents", 0, 20, 2)
+        education = st.selectbox("Education", ["Graduate", "Not Graduate"])
+    with c2:
+        self_employed = st.selectbox("Self Employed", ["No", "Yes"])
+        income_annum = st.number_input("Annual Income (₹)", min_value=0, value=600000, step=10000)
+    with c3:
+        loan_amount = st.number_input("Loan Amount (₹)", min_value=0, value=1500000, step=10000)
+        loan_term = st.number_input("Loan Term (Years)", 1, 50, 15)
 
-    try:
+    st.markdown("<div class='section-title' style='margin-top:10px;'>🏠 Assets & Credit</div>", unsafe_allow_html=True)
+    a1, a2 = st.columns(2)
+    with a1:
+        cibil_score = st.number_input("CIBIL Score", 0, 900, 760)
+        residential_assets_value = st.number_input("Residential Assets (₹)", min_value=0, value=2000000, step=10000)
+        commercial_assets_value = st.number_input("Commercial Assets (₹)", min_value=0, value=500000, step=10000)
+    with a2:
+        luxury_assets_value = st.number_input("Luxury Assets (₹)", min_value=0, value=300000, step=10000)
+        bank_asset_value = st.number_input("Bank Assets (₹)", min_value=0, value=400000, step=10000)
 
-        if hasattr(model, "named_steps"):
+    predict = st.button("🔮 Predict Loan Status", type="primary", use_container_width=True)
+    st.markdown("</div>", unsafe_allow_html=True)
 
-            preprocessor = model.named_steps.get("preprocessor")
-            trained_model = model.named_steps.get("model")
+with right:
+    st.markdown("<div class='section-card'><div class='section-title'>🏦 Bank-style Review</div><div class='section-subtitle'>Prediction results appear here after submission.</div></div>", unsafe_allow_html=True)
+    st.info("Enter the applicant details and click **Predict Loan Status** to generate the model result.")
 
-            if (
-                preprocessor is not None
-                and trained_model is not None
-                and hasattr(
-                    trained_model,
-                    "feature_importances_"
-                )
-            ):
-
-                feature_names = (
-                    preprocessor.get_feature_names_out()
-                )
-
-                importances = (
-                    trained_model.feature_importances_
-                )
-
-                feature_df = pd.DataFrame({
-                    "Feature": feature_names,
-                    "Importance": importances
-                })
-
-                feature_df = feature_df.sort_values(
-                    "Importance",
-                    ascending=False
-                ).head(top_n)
-
-                result = []
-
-                for _, row in feature_df.iterrows():
-
-                    feature_name = str(
-                        row["Feature"]
-                    )
-
-                    feature_name = (
-                        feature_name
-                        .replace("numeric__", "")
-                        .replace("categorical__", "")
-                        .replace("num__", "")
-                        .replace("cat__", "")
-                    )
-
-                    result.append(
-                        (
-                            feature_name,
-                            float(row["Importance"])
-                        )
-                    )
-
-                return result
-
-        return []
-
-    except Exception:
-        return []
-
-
-# ==========================================================
-# APPLICANT INPUT
-# ==========================================================
-
-st.header("👤 Applicant Information")
-
-col1, col2, col3 = st.columns(3)
-
-
-# ==========================================================
-# COLUMN 1
-# ==========================================================
-
-with col1:
-
-    no_of_dependents = st.number_input(
-        "Number of Dependents",
-        min_value=0,
-        max_value=20,
-        value=2,
-        step=1
-    )
-
-    education = st.selectbox(
-        "Education",
-        [
-            "Graduate",
-            "Not Graduate"
-        ]
-    )
-
-    self_employed = st.selectbox(
-        "Self Employed",
-        [
-            "No",
-            "Yes"
-        ]
-    )
-
-    income_annum = st.number_input(
-        "Annual Income",
-        min_value=0,
-        value=600000,
-        step=10000
-    )
-
-
-# ==========================================================
-# COLUMN 2
-# ==========================================================
-
-with col2:
-
-    loan_amount = st.number_input(
-        "Loan Amount",
-        min_value=0,
-        value=1500000,
-        step=10000
-    )
-
-    loan_term = st.number_input(
-        "Loan Term (Years)",
-        min_value=1,
-        max_value=50,
-        value=15,
-        step=1
-    )
-
-    cibil_score = st.number_input(
-        "CIBIL Score",
-        min_value=0,
-        max_value=900,
-        value=760,
-        step=1
-    )
-
-    residential_assets_value = st.number_input(
-        "Residential Assets Value",
-        min_value=0,
-        value=2000000,
-        step=10000
-    )
-
-
-# ==========================================================
-# COLUMN 3
-# ==========================================================
-
-with col3:
-
-    commercial_assets_value = st.number_input(
-        "Commercial Assets Value",
-        min_value=0,
-        value=500000,
-        step=10000
-    )
-
-    luxury_assets_value = st.number_input(
-        "Luxury Assets Value",
-        min_value=0,
-        value=300000,
-        step=10000
-    )
-
-    bank_asset_value = st.number_input(
-        "Bank Asset Value",
-        min_value=0,
-        value=400000,
-        step=10000
-    )
-
-
-# ==========================================================
-# PREDICT BUTTON
-# ==========================================================
-
-st.markdown("---")
-
-predict_button = st.button(
-    "🔮 Predict Loan Status",
-    type="primary",
-    use_container_width=True
-)
-
-
-# ==========================================================
-# RUN PREDICTION
-# ==========================================================
-
-if predict_button:
-
-    # ------------------------------------------------------
-    # CREATE INPUT DATAFRAME
-    # ------------------------------------------------------
-
+if predict:
     input_data = pd.DataFrame({
-
-        "no_of_dependents": [
-            no_of_dependents
-        ],
-
-        "education": [
-            education
-        ],
-
-        "self_employed": [
-            self_employed
-        ],
-
-        "income_annum": [
-            income_annum
-        ],
-
-        "loan_amount": [
-            loan_amount
-        ],
-
-        "loan_term": [
-            loan_term
-        ],
-
-        "cibil_score": [
-            cibil_score
-        ],
-
-        "residential_assets_value": [
-            residential_assets_value
-        ],
-
-        "commercial_assets_value": [
-            commercial_assets_value
-        ],
-
-        "luxury_assets_value": [
-            luxury_assets_value
-        ],
-
-        "bank_asset_value": [
-            bank_asset_value
-        ]
+        "no_of_dependents": [no_of_dependents],
+        "education": [education],
+        "self_employed": [self_employed],
+        "income_annum": [income_annum],
+        "loan_amount": [loan_amount],
+        "loan_term": [loan_term],
+        "cibil_score": [cibil_score],
+        "residential_assets_value": [residential_assets_value],
+        "commercial_assets_value": [commercial_assets_value],
+        "luxury_assets_value": [luxury_assets_value],
+        "bank_asset_value": [bank_asset_value],
     })
 
-
-    # ------------------------------------------------------
-    # ML PREDICTION
-    # ------------------------------------------------------
-
     try:
-
-        prediction = model.predict(
-            input_data
-        )[0]
-
-        probabilities = model.predict_proba(
-            input_data
-        )[0]
-
-        approval_probability = float(
-            probabilities[1]
-        )
-
-        rejection_probability = float(
-            probabilities[0]
-        )
-
+        prediction = int(model.predict(input_data)[0])
+        probs = model.predict_proba(input_data)[0]
+        approval_probability = float(probs[1])
+        rejection_probability = float(probs[0])
     except Exception as e:
-
-        st.error(
-            f"Prediction failed: {e}"
-        )
-
+        st.error(f"Prediction failed: {e}")
         st.stop()
 
+    prediction_text = "Approved" if prediction == 1 else "Rejected"
+    risk = "Low Risk" if approval_probability >= 0.80 else "Medium Risk" if approval_probability >= 0.60 else "High Risk"
 
-    # ------------------------------------------------------
-    # PREDICTION TEXT
-    # ------------------------------------------------------
+    st.markdown("---")
+    st.markdown("<div class='section-title'>📋 Prediction Result</div>", unsafe_allow_html=True)
 
     if prediction == 1:
-        prediction_text = "Approved"
+        st.markdown(f"<div class='approval-card'><div class='approval-title'>✅ Loan Approved</div><div style='color:#40604f;'>The trained ML model predicts that this application is likely to be approved.</div></div>", unsafe_allow_html=True)
     else:
-        prediction_text = "Rejected"
+        st.markdown(f"<div class='rejection-card'><div class='rejection-title'>❌ Loan Rejected</div><div style='color:#6b4650;'>The trained ML model predicts that this application is likely to be rejected.</div></div>", unsafe_allow_html=True)
 
+    r1, r2, r3 = st.columns(3)
+    r1.markdown(f"<div class='metric-card'><div class='metric-label'>Approval probability</div><div class='metric-value'>{approval_probability*100:.1f}%</div><div class='metric-note'>Model probability</div></div>", unsafe_allow_html=True)
+    r2.markdown(f"<div class='metric-card'><div class='metric-label'>Risk level</div><div class='metric-value'>{risk}</div><div class='metric-note'>Project threshold</div></div>", unsafe_allow_html=True)
+    r3.markdown(f"<div class='metric-card'><div class='metric-label'>Rejection probability</div><div class='metric-value'>{rejection_probability*100:.1f}%</div><div class='metric-note'>Model probability</div></div>", unsafe_allow_html=True)
 
-    # ------------------------------------------------------
-    # RISK LEVEL
-    # ------------------------------------------------------
+    tab1, tab2 = st.tabs(["🤖 AI Explanation", "👤 Applicant Details"])
 
-    if approval_probability >= 0.80:
-        risk = "Low Risk"
-
-    elif approval_probability >= 0.60:
-        risk = "Medium Risk"
-
-    else:
-        risk = "High Risk"
-
-
-    # ======================================================
-    # RESULT
-    # ======================================================
-
-    st.header("📋 Prediction Result")
-
-    result1, result2, result3 = st.columns(3)
-
-
-    with result1:
-
-        if prediction == 1:
-            st.success("✅ LOAN APPROVED")
-        else:
-            st.error("❌ LOAN REJECTED")
-
-
-    with result2:
-
-        st.metric(
-            "Approval Probability",
-            f"{approval_probability * 100:.1f}%"
-        )
-
-
-    with result3:
-
-        st.metric(
-            "Risk Level",
-            risk
-        )
-
-
-    # ======================================================
-    # APPLICANT DETAILS
-    # ======================================================
-
-    with st.expander("📋 View Applicant Details"):
-
-        st.dataframe(
-            input_data,
-            use_container_width=True
-        )
-
-
-    # ======================================================
-    # FEATURE IMPORTANCE
-    # ======================================================
-
-    top_features = get_top_features(
-        model,
-        top_n=5
-    )
-
-
-    # ======================================================
-    # AI EXPLANATION
-    # ======================================================
-
-    st.markdown("---")
-
-    st.header("🤖 AI Explanation of This Prediction")
-
-    st.caption(
-        "The machine-learning model makes the prediction. "
-        "Gemini is used only to explain the result."
-    )
-
-
-    # ------------------------------------------------------
-    # GET GEMINI API KEY
-    # ------------------------------------------------------
-
-    gemini_api_key = None
-
-    try:
-
-        gemini_api_key = st.secrets.get(
-            "GEMINI_API_KEY"
-        )
-
-    except Exception:
+    with tab1:
+        st.markdown("<div class='ai-card'><div class='ai-label'>Gemini AI • Explanation Layer</div>", unsafe_allow_html=True)
 
         gemini_api_key = None
-
-
-    # Local fallback
-    if not gemini_api_key:
-
-        gemini_api_key = os.getenv(
-            "GEMINI_API_KEY"
-        )
-
-
-    # ------------------------------------------------------
-    # CHECK KEY
-    # ------------------------------------------------------
-
-    if not gemini_api_key:
-
-        st.warning(
-            """
-            Gemini API key is not configured.
-
-            Add this to Streamlit Secrets:
-
-            GEMINI_API_KEY = "your-gemini-api-key"
-            """
-        )
-
-    else:
-
         try:
+            gemini_api_key = st.secrets.get("GEMINI_API_KEY")
+        except Exception:
+            pass
+        gemini_api_key = gemini_api_key or os.getenv("GEMINI_API_KEY")
 
-            client = genai.Client(
-                api_key=gemini_api_key.strip()
-            )
-
-
-            # ------------------------------------------------
-            # FEATURE IMPORTANCE TEXT
-            # ------------------------------------------------
-
-            if top_features:
-
-                feature_text = "\n".join(
-                    [
-                        f"- {name}: {importance:.4f}"
-                        for name, importance
-                        in top_features
-                    ]
-                )
-
-            else:
-
-                feature_text = (
-                    "Feature importance is unavailable."
-                )
-
-
-            # ------------------------------------------------
-            # PROMPT
-            # ------------------------------------------------
-
+        if not gemini_api_key:
+            st.warning("Add GEMINI_API_KEY to Streamlit Secrets to enable the AI explanation.")
+        else:
             prompt = f"""
-You are explaining a college machine-learning project.
+You are explaining a college ML project named Loan Approval Prediction: Bagging vs Boosting.
+The trained ML model has already produced this result and you must not make a new decision.
 
-Project:
-Loan Approval Prediction: Bagging vs Boosting
-
-The trained machine-learning model has already made
-the prediction. Do not make a new prediction.
-
-MODEL RESULT
-------------
 Prediction: {prediction_text}
-Approval probability: {approval_probability * 100:.1f}%
-Rejection probability: {rejection_probability * 100:.1f}%
-Project risk level: {risk}
+Approval probability: {approval_probability*100:.1f}%
+Risk level: {risk}
 
-APPLICANT INFORMATION
----------------------
-Number of dependents: {no_of_dependents}
-Education: {education}
-Self employed: {self_employed}
-Annual income: ₹{income_annum:,}
-Loan amount: ₹{loan_amount:,}
-Loan term: {loan_term} years
-CIBIL score: {cibil_score}
-Residential assets: ₹{residential_assets_value:,}
-Commercial assets: ₹{commercial_assets_value:,}
-Luxury assets: ₹{luxury_assets_value:,}
-Bank assets: ₹{bank_asset_value:,}
+Applicant:
+- Dependents: {no_of_dependents}
+- Education: {education}
+- Self-employed: {self_employed}
+- Annual income: ₹{income_annum:,}
+- Loan amount: ₹{loan_amount:,}
+- Loan term: {loan_term} years
+- CIBIL score: {cibil_score}
+- Residential assets: ₹{residential_assets_value:,}
+- Commercial assets: ₹{commercial_assets_value:,}
+- Luxury assets: ₹{luxury_assets_value:,}
+- Bank assets: ₹{bank_asset_value:,}
 
-TOP MODEL FEATURE IMPORTANCE
-----------------------------
-{feature_text}
-
-Write a simple explanation for a college project presentation.
-
-Requirements:
-
-1. Start with one sentence stating the model prediction.
-2. Explain the approval probability in simple language.
-3. Mention important applicant factors visible in the input.
-4. Use feature importance only as model-level information.
-5. Do not say that one feature definitely caused the prediction.
-6. Explain this workflow:
-   applicant data → preprocessing → trained ML model
-   → approval probability → final prediction.
-7. Do not call this an actual bank decision.
-8. Do not invent banking rules.
-9. Keep the explanation around 100-130 words.
-10. Use simple English.
+Give a concise 100-130 word explanation for a college demonstration.
+Explain what the probability means, mention relevant factors from the supplied data, and explain the workflow:
+input -> preprocessing -> trained ML model -> probability -> prediction.
+Do not invent banking rules and do not claim one feature alone caused the decision.
+Clearly state that this is an academic ML prediction, not an actual bank decision.
 """
+            try:
+                with st.spinner("Generating AI explanation..."):
+                    client = genai.Client(api_key=gemini_api_key.strip())
+                    response = client.models.generate_content(
+                        model="gemini-3.8-flash",
+                        contents=prompt,
+                        config=types.GenerateContentConfig(
+                            temperature=0.3,
+                            max_output_tokens=220,
+                        ),
+                    )
+                st.write(response.text)
+            except Exception as e:
+                st.error(f"AI explanation could not be generated: {e}")
 
+        st.markdown("</div>", unsafe_allow_html=True)
 
-            # ------------------------------------------------
-            # GEMINI CALL
-            # ------------------------------------------------
-
-            with st.spinner(
-                "Generating AI explanation..."
-            ):
-
-                response = client.models.generate_content(
-                    model="gemini-3.1-flash-lite",
-                    contents=prompt
-                )
-
-
-            # ------------------------------------------------
-            # DISPLAY
-            # ------------------------------------------------
-
-            explanation = (
-                response.text
-                if response.text
-                else ""
-            ).strip()
-
-
-            if explanation:
-
-                st.markdown(
-                    explanation
-                )
-
-            else:
-
-                st.warning(
-                    "Gemini returned an empty explanation."
-                )
-
-
-            st.caption(
-                "AI-generated explanation for project "
-                "demonstration. It does not represent "
-                "an actual banking decision."
-            )
-
-
-        except Exception as e:
-
-            st.error(
-                f"AI explanation could not be generated: {e}"
-            )
-
-
-    # ======================================================
-    # HOW IT WORKS
-    # ======================================================
+    with tab2:
+        st.dataframe(input_data, use_container_width=True)
 
     st.markdown("---")
-
-    st.header("⚙️ How This Prediction Works")
-
-    step1, step2, step3, step4 = st.columns(4)
-
-
-    with step1:
-
-        st.markdown(
-            """
-            ### 1️⃣ Input
-
-            Applicant details are entered into
-            the application.
-            """
-        )
-
-
-    with step2:
-
-        st.markdown(
-            """
-            ### 2️⃣ Preprocessing
-
-            The information is prepared using
-            the same preprocessing used during training.
-            """
-        )
-
-
-    with step3:
-
-        st.markdown(
-            """
-            ### 3️⃣ ML Prediction
-
-            The trained ensemble model calculates
-            the approval probability.
-            """
-        )
-
-
-    with step4:
-
-        st.markdown(
-            """
-            ### 4️⃣ AI Explanation
-
-            Gemini converts the model result into
-            a simple explanation.
-            """
-        )
-
-
-    # ======================================================
-    # RISK THRESHOLDS
-    # ======================================================
-
-    with st.expander(
-        "ℹ️ About the Risk Level"
-    ):
-
-        st.markdown(
-            """
-            The project uses these demonstration thresholds:
-
-            **80% or above → Low Risk**
-
-            **60%–79.9% → Medium Risk**
-
-            **Below 60% → High Risk**
-
-            These are project-defined thresholds and are not
-            official banking standards.
-            """
-        )
+    st.markdown("<div class='section-title'>⚙️ How It Works</div>", unsafe_allow_html=True)
+    st.markdown("""
+    <div class='workflow'>
+      <div class='workflow-step'><div class='workflow-num'>1</div><div class='workflow-title'>Input</div><div class='workflow-text'>Applicant information is entered into the app.</div></div>
+      <div class='workflow-step'><div class='workflow-num'>2</div><div class='workflow-title'>Preprocessing</div><div class='workflow-text'>The trained pipeline prepares numeric and categorical features.</div></div>
+      <div class='workflow-step'><div class='workflow-num'>3</div><div class='workflow-title'>ML Prediction</div><div class='workflow-text'>The ensemble model returns approval probability.</div></div>
+      <div class='workflow-step'><div class='workflow-num'>4</div><div class='workflow-title'>Gemini Explanation</div><div class='workflow-text'>Gemini turns the model result into a short explanation.</div></div>
+    </div>
+    <div class='footer-card'>🇮🇳 <b>Bharat Loan AI</b> is fictional branding for an academic project. It is not a real financial institution.</div>
+    """, unsafe_allow_html=True)
