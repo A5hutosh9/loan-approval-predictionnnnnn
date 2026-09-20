@@ -3,7 +3,7 @@ import os
 import joblib
 import pandas as pd
 import streamlit as st
-from openai import OpenAI
+from google import genai
 
 
 # ==========================================================
@@ -25,14 +25,14 @@ st.title("🔮 Loan Prediction")
 
 st.markdown(
     """
-    Enter applicant information to predict whether the loan
-    application is likely to be approved.
+    Enter applicant information to predict whether the
+    loan application is likely to be approved.
     """
 )
 
 
 # ==========================================================
-# LOAD MODEL
+# LOAD ML MODEL
 # ==========================================================
 
 try:
@@ -44,19 +44,13 @@ except Exception as e:
 
 
 # ==========================================================
-# FUNCTION: GET TOP MODEL FEATURES
+# GET TOP FEATURE IMPORTANCE
 # ==========================================================
 
 def get_top_features(model, top_n=5):
-    """
-    Try to extract the most important features from the
-    trained pipeline/model.
-
-    Returns a list of (feature, importance).
-    """
 
     try:
-        # Pipeline
+
         if hasattr(model, "named_steps"):
 
             preprocessor = model.named_steps.get("preprocessor")
@@ -65,7 +59,10 @@ def get_top_features(model, top_n=5):
             if (
                 preprocessor is not None
                 and trained_model is not None
-                and hasattr(trained_model, "feature_importances_")
+                and hasattr(
+                    trained_model,
+                    "feature_importances_"
+                )
             ):
 
                 feature_names = (
@@ -86,47 +83,35 @@ def get_top_features(model, top_n=5):
                     ascending=False
                 ).head(top_n)
 
-                clean_features = []
+                result = []
 
                 for _, row in feature_df.iterrows():
 
-                    feature_name = str(row["Feature"])
+                    feature_name = str(
+                        row["Feature"]
+                    )
 
                     feature_name = (
                         feature_name
-                        .replace("num__", "")
-                        .replace("cat__", "")
                         .replace("numeric__", "")
                         .replace("categorical__", "")
+                        .replace("num__", "")
+                        .replace("cat__", "")
                     )
 
-                    clean_features.append(
+                    result.append(
                         (
                             feature_name,
                             float(row["Importance"])
                         )
                     )
 
-                return clean_features
+                return result
 
-        # Direct model
-        if hasattr(model, "feature_importances_"):
-
-            importances = model.feature_importances_
-
-            return [
-                (
-                    f"Feature {i + 1}",
-                    float(value)
-                )
-                for i, value in
-                enumerate(importances[:top_n])
-            ]
+        return []
 
     except Exception:
-        pass
-
-    return []
+        return []
 
 
 # ==========================================================
@@ -313,7 +298,7 @@ if predict_button:
 
 
     # ------------------------------------------------------
-    # MODEL PREDICTION
+    # ML PREDICTION
     # ------------------------------------------------------
 
     try:
@@ -343,61 +328,48 @@ if predict_button:
         st.stop()
 
 
-    # ======================================================
-    # RESULT
-    # ======================================================
+    # ------------------------------------------------------
+    # PREDICTION TEXT
+    # ------------------------------------------------------
 
     if prediction == 1:
-
         prediction_text = "Approved"
-
     else:
-
         prediction_text = "Rejected"
 
 
-    # ======================================================
+    # ------------------------------------------------------
     # RISK LEVEL
-    # ======================================================
+    # ------------------------------------------------------
 
     if approval_probability >= 0.80:
-
         risk = "Low Risk"
 
     elif approval_probability >= 0.60:
-
         risk = "Medium Risk"
 
     else:
-
         risk = "High Risk"
 
 
     # ======================================================
-    # DISPLAY RESULT
+    # RESULT
     # ======================================================
 
     st.header("📋 Prediction Result")
 
-    result_col1, result_col2, result_col3 = st.columns(3)
+    result1, result2, result3 = st.columns(3)
 
 
-    with result_col1:
+    with result1:
 
         if prediction == 1:
-
-            st.success(
-                "✅ LOAN APPROVED"
-            )
-
+            st.success("✅ LOAN APPROVED")
         else:
-
-            st.error(
-                "❌ LOAN REJECTED"
-            )
+            st.error("❌ LOAN REJECTED")
 
 
-    with result_col2:
+    with result2:
 
         st.metric(
             "Approval Probability",
@@ -405,7 +377,7 @@ if predict_button:
         )
 
 
-    with result_col3:
+    with result3:
 
         st.metric(
             "Risk Level",
@@ -426,7 +398,7 @@ if predict_button:
 
 
     # ======================================================
-    # MODEL FEATURE IMPORTANCE
+    # FEATURE IMPORTANCE
     # ======================================================
 
     top_features = get_top_features(
@@ -445,49 +417,48 @@ if predict_button:
 
     st.caption(
         "The machine-learning model makes the prediction. "
-        "OpenAI is used only to explain the result in simple language."
+        "Gemini is used only to explain the result."
     )
 
 
     # ------------------------------------------------------
-    # GET API KEY
+    # GET GEMINI API KEY
     # ------------------------------------------------------
 
-    api_key = None
+    gemini_api_key = None
 
-    # Streamlit Cloud secret
     try:
 
-        api_key = st.secrets.get(
-            "OPENAI_API_KEY"
+        gemini_api_key = st.secrets.get(
+            "GEMINI_API_KEY"
         )
 
     except Exception:
 
-        api_key = None
+        gemini_api_key = None
 
 
-    # Local environment variable fallback
-    if not api_key:
+    # Local fallback
+    if not gemini_api_key:
 
-        api_key = os.getenv(
-            "OPENAI_API_KEY"
+        gemini_api_key = os.getenv(
+            "GEMINI_API_KEY"
         )
 
 
     # ------------------------------------------------------
-    # CHECK API KEY
+    # CHECK KEY
     # ------------------------------------------------------
 
-    if not api_key:
+    if not gemini_api_key:
 
         st.warning(
             """
-            OpenAI API key is not configured.
+            Gemini API key is not configured.
 
             Add this to Streamlit Secrets:
 
-            OPENAI_API_KEY = "your-new-api-key"
+            GEMINI_API_KEY = "your-gemini-api-key"
             """
         )
 
@@ -495,13 +466,13 @@ if predict_button:
 
         try:
 
-            client = OpenAI(
-                api_key=api_key.strip()
+            client = genai.Client(
+                api_key=gemini_api_key.strip()
             )
 
 
             # ------------------------------------------------
-            # TOP FEATURE TEXT
+            # FEATURE IMPORTANCE TEXT
             # ------------------------------------------------
 
             if top_features:
@@ -517,12 +488,12 @@ if predict_button:
             else:
 
                 feature_text = (
-                    "Feature importance was not available."
+                    "Feature importance is unavailable."
                 )
 
 
             # ------------------------------------------------
-            # AI PROMPT
+            # PROMPT
             # ------------------------------------------------
 
             prompt = f"""
@@ -531,8 +502,8 @@ You are explaining a college machine-learning project.
 Project:
 Loan Approval Prediction: Bagging vs Boosting
 
-The trained machine-learning model has already made the
-decision. You must NOT make a new loan decision.
+The trained machine-learning model has already made
+the prediction. Do not make a new prediction.
 
 MODEL RESULT
 ------------
@@ -555,52 +526,52 @@ Commercial assets: ₹{commercial_assets_value:,}
 Luxury assets: ₹{luxury_assets_value:,}
 Bank assets: ₹{bank_asset_value:,}
 
-TOP MODEL FEATURE IMPORTANCES
------------------------------
+TOP MODEL FEATURE IMPORTANCE
+----------------------------
 {feature_text}
 
-Explain the result for a college project demonstration.
+Write a simple explanation for a college project presentation.
 
-Instructions:
+Requirements:
 
-1. Start with one clear sentence stating what the model predicted.
+1. Start with one sentence stating the model prediction.
 2. Explain the approval probability in simple language.
-3. Mention important applicant factors such as CIBIL score,
-   loan amount, loan term, income, or assets where relevant.
-4. If feature importance is supplied, use it as model-level
-   evidence, but do not say that a feature alone caused the result.
-5. Briefly explain the workflow:
-   applicant inputs → preprocessing → trained model →
-   prediction probability → final prediction.
-6. Clearly say that this is a machine-learning project prediction,
-   not a real bank lending decision.
-7. Do not invent rules, policies, or banking standards.
-8. Keep the explanation around 120 words.
-9. Use simple English suitable for a college presentation.
+3. Mention important applicant factors visible in the input.
+4. Use feature importance only as model-level information.
+5. Do not say that one feature definitely caused the prediction.
+6. Explain this workflow:
+   applicant data → preprocessing → trained ML model
+   → approval probability → final prediction.
+7. Do not call this an actual bank decision.
+8. Do not invent banking rules.
+9. Keep the explanation around 100-130 words.
+10. Use simple English.
 """
 
 
             # ------------------------------------------------
-            # OPENAI CALL
+            # GEMINI CALL
             # ------------------------------------------------
 
             with st.spinner(
                 "Generating AI explanation..."
             ):
 
-                response = client.responses.create(
-
-                    model="gpt-5.6-luna",
-
-                    input=prompt
+                response = client.models.generate_content(
+                    model="gemini-3.1-flash-lite",
+                    contents=prompt
                 )
 
 
             # ------------------------------------------------
-            # DISPLAY RESPONSE
+            # DISPLAY
             # ------------------------------------------------
 
-            explanation = response.output_text.strip()
+            explanation = (
+                response.text
+                if response.text
+                else ""
+            ).strip()
 
 
             if explanation:
@@ -612,17 +583,13 @@ Instructions:
             else:
 
                 st.warning(
-                    "OpenAI returned an empty explanation."
+                    "Gemini returned an empty explanation."
                 )
 
 
-            # ------------------------------------------------
-            # DISCLAIMER
-            # ------------------------------------------------
-
             st.caption(
                 "AI-generated explanation for project "
-                "demonstration only. It does not represent "
+                "demonstration. It does not represent "
                 "an actual banking decision."
             )
 
@@ -635,7 +602,7 @@ Instructions:
 
 
     # ======================================================
-    # HOW THE SYSTEM WORKS
+    # HOW IT WORKS
     # ======================================================
 
     st.markdown("---")
@@ -651,8 +618,8 @@ Instructions:
             """
             ### 1️⃣ Input
 
-            Applicant information is entered into
-            the Streamlit application.
+            Applicant details are entered into
+            the application.
             """
         )
 
@@ -663,8 +630,8 @@ Instructions:
             """
             ### 2️⃣ Preprocessing
 
-            Numerical and categorical information is
-            prepared in the same way as during training.
+            The information is prepared using
+            the same preprocessing used during training.
             """
         )
 
@@ -676,7 +643,7 @@ Instructions:
             ### 3️⃣ ML Prediction
 
             The trained ensemble model calculates
-            the probability of loan approval.
+            the approval probability.
             """
         )
 
@@ -687,8 +654,8 @@ Instructions:
             """
             ### 4️⃣ AI Explanation
 
-            OpenAI converts the ML result into a
-            short, understandable explanation.
+            Gemini converts the model result into
+            a simple explanation.
             """
         )
 
@@ -711,7 +678,7 @@ Instructions:
 
             **Below 60% → High Risk**
 
-            These thresholds are defined for this project.
-            They are not official banking standards.
+            These are project-defined thresholds and are not
+            official banking standards.
             """
         )
