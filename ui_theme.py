@@ -1142,31 +1142,17 @@ def apply_theme():
 # ==========================================================
 
 def sidebar_brand():
-
+    """Render the sidebar brand as HTML, not Markdown code."""
     html = """
 <div class="bank-brand">
-
-    <div class="logo">
-        🏛️
-    </div>
-
-    <div class="name">
-        Bharat Loan AI
-    </div>
-
-    <div class="tagline">
-        Indian Banking-Style ML Project
-    </div>
-
+    <div class="logo">🏛️</div>
+    <div class="name">Bharat Loan AI</div>
+    <div class="tagline">Indian Banking-Style ML Project</div>
     <div class="tricolor"></div>
-
 </div>
 """
-
-    st.sidebar.markdown(
-        textwrap.dedent(html),
-        unsafe_allow_html=True
-    )
+    with st.sidebar:
+        st.html(textwrap.dedent(html))
 
 
 # ==========================================================
@@ -1177,75 +1163,34 @@ def hero(
     title="Loan Approval Prediction",
     subtitle="Data-driven decisions for a smarter tomorrow"
 ):
-
-    # Highlight "Prediction"
+    """Render the page hero as HTML, not Markdown code."""
     if "Prediction" in title:
-
-        parts = title.split(
-            "Prediction",
-            1
-        )
-
-        title_html = (
-            parts[0]
-            + "<span>Prediction</span>"
-            + parts[1]
-        )
-
+        parts = title.split("Prediction", 1)
+        title_html = parts[0] + "<span>Prediction</span>" + parts[1]
     else:
-
         title_html = title
-
 
     html = f"""
 <div class="hero">
-
-    <div class="hero-kicker">
-        🇮🇳 Empowering a digitally enabled India
-    </div>
-
-    <div class="hero-title">
-        {title_html}
-    </div>
-
-    <div class="hero-subtitle">
-        {subtitle}
-    </div>
-
+    <div class="hero-kicker">🇮🇳 Empowering a digitally enabled India</div>
+    <div class="hero-title">{title_html}</div>
+    <div class="hero-subtitle">{subtitle}</div>
     <div class="hero-badges">
-
-        <div class="hero-badge">
-            ⚡ Faster Insights
-        </div>
-
-        <div class="hero-badge">
-            🛡️ Explainable ML
-        </div>
-
-        <div class="hero-badge">
-            📊 Ensemble Learning
-        </div>
-
-        <div class="hero-badge">
-            🤖 Gemini AI Explanation
-        </div>
-
+        <div class="hero-badge">⚡ Faster Insights</div>
+        <div class="hero-badge">🛡️ Explainable ML</div>
+        <div class="hero-badge">📊 Ensemble Learning</div>
+        <div class="hero-badge">🤖 Gemini AI Explanation</div>
     </div>
-
 </div>
 """
-
-    st.markdown(
-        textwrap.dedent(html),
-        unsafe_allow_html=True
-    )
+    st.html(textwrap.dedent(html))
 
 
 # ==========================================================
 # SECTION CARD
 # ==========================================================
 
-def section_card(
+
     title,
     text="",
     items=None
