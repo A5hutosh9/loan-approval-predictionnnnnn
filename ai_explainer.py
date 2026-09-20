@@ -1,8 +1,7 @@
 """Live Gemini explanation helper for experiment results.
 
-Uses Gemini's Interactions API, which is the current recommended interface.
-The generated explanation is stored in Streamlit session state so a rerun does
-not erase it.
+Uses Gemini's Interactions API. The generated explanation is stored in
+Streamlit session state so a rerun does not erase it.
 """
 import os
 import streamlit as st
@@ -75,29 +74,10 @@ and validation setup and are not real-world lending guarantees."""
 
             explanation = getattr(interaction, "output_text", None)
 
-            # Defensive fallback for SDK response objects that expose output
-            # blocks but not output_text.
-            if not explanation:
-                output = getattr(interaction, "output", None)
-                if output:
-                    parts = []
-                    for item in output:
-                        text_value = getattr(item, "text", None)
-                        if text_value:
-                            parts.append(text_value)
-                        content = getattr(item, "content", None)
-                        if content:
-                            for block in content:
-                                block_text = getattr(block, "text", None)
-                                if block_text:
-                                    parts.append(block_text)
-                    explanation = "
-".join(parts).strip() if parts else None
-
             if not explanation:
                 raise RuntimeError(
-                    "Gemini returned an empty response. Check the API key, "
-                    "SDK version, and model availability."
+                    "Gemini returned an empty response. Check the API key, SDK "
+                    "version, and model availability."
                 )
 
             st.session_state["live_experiment_explanation"] = explanation
