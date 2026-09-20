@@ -31,6 +31,7 @@ from sklearn.metrics import (
 )
 
 from utils import normalize_binary_target
+from ai_explainer import render_live_experiment_explanation
 
 
 st.set_page_config(
@@ -590,6 +591,18 @@ for index, (model_name, model) in enumerate(model_items):
 # ==========================================================
 
 results_df = pd.DataFrame(results)
+
+
+# ==========================================================
+# LIVE AI EXPLANATION
+# ==========================================================
+
+render_live_experiment_explanation(
+    results_df,
+    len(df),
+    df.shape[1],
+    target_column
+)
 
 
 st.success(
