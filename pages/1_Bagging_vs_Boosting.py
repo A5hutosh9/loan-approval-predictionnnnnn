@@ -10,7 +10,7 @@ apply_theme()
 sidebar_brand()
 hero("Ensemble Methods", "A side-by-side study of Bagging and Boosting in loan approval classification")
 st.caption("PAGE 02 · MODEL COMPARISON")
-st.info("**Dataset used:** `loan_approval_dataset.csv` — 4,269 loan applications and 13 columns. The target is `loan_status` (Approved/Rejected). Features describe applicants’ credit, income, loan, education, employment and assets.")
+st.info("**Dataset used:** `loan_approval_dataset.csv` — 4,269 loan applications and 13 columns. The target is `loan_status` (Approved/Rejected). Features describe applicants’ credit, income, loan, education, employment and assets. **Training:** Decision Tree, Bagging, Random Forest, AdaBoost and Gradient Boosting were trained and evaluated using this dataset. Results shown here are reported project validation metrics.")
 
 st.markdown("## 🧺 Bagging | Parallel learning")
 st.markdown("Bagging (Bootstrap Aggregating) trains multiple estimators independently on bootstrap samples, then combines their predictions. It is commonly used to reduce variance.")
@@ -54,4 +54,16 @@ st.markdown("## 🔍 Generalization gap")
 st.caption("Gap values are training score minus validation score.")
 gap_data = pd.DataFrame({"Model": ["Decision Tree", "Bagging", "Random Forest", "AdaBoost", "Gradient Boosting"], "Accuracy Gap": [0.0218, 0.0157, 0.0204, 0.0066, 0.0156], "F1 Gap": [0.0175, 0.0125, 0.0163, 0.0054, 0.0125], "ROC-AUC Gap": [0.0229, 0.0025, 0.0033, 0.0016, 0.0018]})
 st.dataframe(gap_data.style.format({"Accuracy Gap": "{:.4f}", "F1 Gap": "{:.4f}", "ROC-AUC Gap": "{:.4f}"}), use_container_width=True)
+
+with st.expander("🤖 AI-style explanation of these results"):
+    st.markdown("""**How to read the comparison**
+
+    - **Accuracy** is the share of predictions classified correctly.
+    - **F1-score** balances precision and recall, which is useful when class counts differ.
+    - **ROC-AUC** measures how well the model separates the two classes across thresholds.
+    - **Generalization gap** is the training score minus the validation score; a larger positive gap can indicate overfitting.
+
+    **Project interpretation:** Bagging combines independently trained estimators, while boosting builds estimators sequentially to focus on remaining errors. The table presents previously reported validation results for this dataset. These values describe model performance on the evaluation setup and do not guarantee outcomes for new applicants or real lending decisions.
+
+    This explanation is rule-based page content, not a live response from an external generative-AI service.""")
 st.caption("This page is part of an academic machine-learning project and does not represent a real financial institution.")
