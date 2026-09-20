@@ -1,64 +1,64 @@
+import textwrap
 import streamlit as st
 
 
+# ==========================================================
+# APPLY GLOBAL THEME
+# ==========================================================
+
 def apply_theme():
+
     st.markdown(
-        """
+        textwrap.dedent("""
         <style>
 
         /* =====================================================
-           GLOBAL COLORS
+           COLORS
         ===================================================== */
 
         :root {
-            --navy: #092846;
-            --navy2: #0d3f70;
-            --blue: #0f56b3;
-            --blue2: #1d73c9;
-            --gold: #d8a83e;
-            --orange: #ff7a00;
+            --navy: #082746;
+            --navy-light: #0d4e8e;
+            --blue: #145db5;
+            --blue-light: #2378c9;
+
+            --gold: #e4b84d;
+            --saffron: #ff7a00;
             --green: #138808;
 
-            --ink: #16314f;
-            --ink2: #234a70;
-            --muted: #61758d;
-
-            --bg: #eef4f9;
             --white: #ffffff;
-            --line: #d6e1ec;
+            --background: #eef4f9;
 
-            --success: #11814a;
-            --success-bg: #edf9f2;
+            --text: #153451;
+            --text-light: #637890;
 
-            --danger: #a7283b;
-            --danger-bg: #fff1f3;
+            --border: #d5e1ec;
+
+            --success: #117a46;
+            --danger: #a5293c;
         }
 
 
         /* =====================================================
-           APP BACKGROUND
+           MAIN APP
         ===================================================== */
 
         .stApp {
             background:
                 linear-gradient(
                     180deg,
-                    #f8fafc 0%,
-                    #edf3f8 55%,
+                    #f8fbfd 0%,
+                    #eef4f8 55%,
                     #e9f0f6 100%
                 );
-            color: var(--ink);
+
+            color: var(--text);
         }
 
 
         /* =====================================================
-           STREAMLIT TOP BAR
+           REMOVE STREAMLIT DEFAULT ELEMENTS
         ===================================================== */
-
-        [data-testid="stHeader"] {
-            background: rgba(255, 255, 255, 0.95);
-            height: 55px;
-        }
 
         #MainMenu {
             visibility: hidden;
@@ -66,6 +66,10 @@ def apply_theme():
 
         footer {
             visibility: hidden;
+        }
+
+        [data-testid="stHeader"] {
+            background: rgba(255,255,255,0.96);
         }
 
 
@@ -77,20 +81,24 @@ def apply_theme():
             background:
                 linear-gradient(
                     180deg,
-                    #072844 0%,
-                    #0a3157 50%,
-                    #082744 100%
+                    #062441 0%,
+                    #0a3156 52%,
+                    #07253f 100%
                 );
 
-            border-right: 1px solid rgba(255,255,255,0.08);
+            border-right:
+                1px solid rgba(255,255,255,0.08);
         }
+
 
         [data-testid="stSidebar"] * {
-            color: #f5f9fd;
+            color: #ffffff;
         }
 
+
         [data-testid="stSidebar"] hr {
-            border-color: rgba(255,255,255,0.15);
+            border-color:
+                rgba(255,255,255,0.16);
         }
 
 
@@ -99,45 +107,83 @@ def apply_theme():
         ===================================================== */
 
         .bank-brand {
-            background: rgba(255,255,255,0.07);
-            border: 1px solid rgba(255,255,255,0.12);
-            border-radius: 18px;
-            padding: 20px 18px;
-            margin-bottom: 18px;
+            background:
+                rgba(255,255,255,0.07);
+
+            border:
+                1px solid
+                rgba(255,255,255,0.12);
+
+            border-radius:
+                18px;
+
+            padding:
+                20px 18px;
+
+            margin-bottom:
+                18px;
+
             box-shadow:
-                0 8px 25px rgba(0,0,0,0.10);
+                0 10px 30px
+                rgba(0,0,0,0.12);
         }
+
 
         .bank-brand .logo {
-            font-size: 30px;
-            line-height: 1;
-            margin-bottom: 8px;
+            font-size:
+                31px;
+
+            margin-bottom:
+                8px;
         }
+
 
         .bank-brand .name {
-            color: #ffffff;
-            font-size: 21px;
-            font-weight: 800;
-            letter-spacing: 0.2px;
+            color:
+                #ffffff;
+
+            font-size:
+                21px;
+
+            font-weight:
+                800;
         }
 
+
         .bank-brand .tagline {
-            color: #d7e6f4;
-            font-size: 10px;
-            text-transform: uppercase;
-            letter-spacing: 1.3px;
-            margin-top: 4px;
+            color:
+                #cdddec;
+
+            font-size:
+                10px;
+
+            text-transform:
+                uppercase;
+
+            letter-spacing:
+                1.4px;
+
+            margin-top:
+                4px;
         }
 
 
         /* =====================================================
-           INDIA TRICOLOR
+           INDIAN TRICOLOUR STRIP
         ===================================================== */
 
         .tricolor {
-            height: 5px;
-            width: 100%;
-            border-radius: 999px;
+            width:
+                100%;
+
+            height:
+                5px;
+
+            border-radius:
+                999px;
+
+            margin-top:
+                14px;
 
             background:
                 linear-gradient(
@@ -149,10 +195,6 @@ def apply_theme():
                     #138808 66.66%,
                     #138808 100%
                 );
-
-            margin-top: 14px;
-            box-shadow:
-                0 1px 5px rgba(0,0,0,0.15);
         }
 
 
@@ -161,70 +203,105 @@ def apply_theme():
         ===================================================== */
 
         [data-testid="stSidebar"] .stButton button {
-            width: 100%;
-            min-height: 42px;
 
-            background: rgba(255,255,255,0.07);
-            border: 1px solid rgba(255,255,255,0.13);
-            color: #ffffff;
+            width:
+                100%;
 
-            border-radius: 10px;
+            min-height:
+                42px;
 
-            font-weight: 600;
+            border-radius:
+                10px;
 
-            transition:
-                background 0.2s ease,
-                transform 0.2s ease;
+            background:
+                rgba(255,255,255,0.07);
+
+            border:
+                1px solid
+                rgba(255,255,255,0.12);
+
+            color:
+                #ffffff;
+
+            font-weight:
+                600;
         }
 
+
         [data-testid="stSidebar"] .stButton button:hover {
-            background: rgba(255,255,255,0.14);
-            transform: translateY(-1px);
+
+            background:
+                rgba(255,255,255,0.14);
+
+            transform:
+                translateY(-1px);
         }
 
 
         /* =====================================================
-           MAIN HERO
+           HERO
         ===================================================== */
 
         .hero {
-            position: relative;
-            overflow: hidden;
+
+            position:
+                relative;
+
+            overflow:
+                hidden;
 
             background:
                 linear-gradient(
                     105deg,
                     #082746 0%,
-                    #0d4e8e 56%,
-                    #1d73bd 100%
+                    #0d4e8e 57%,
+                    #2378c9 100%
                 );
 
-            border-radius: 22px;
+            border-radius:
+                22px;
 
-            padding: 34px 36px;
+            padding:
+                34px 36px;
 
             margin:
                 8px 0 25px 0;
 
-            color: white;
-
             box-shadow:
-                0 16px 42px rgba(9,40,70,0.18);
+                0 18px 42px
+                rgba(8,39,70,0.18);
+
+            color:
+                #ffffff;
         }
 
 
-        /* Decorative Indian tricolor element */
+        /* =====================================================
+           TRICOLOUR CIRCLE
+        ===================================================== */
+
         .hero:after {
-            content: "";
-            position: absolute;
 
-            right: 38px;
-            top: 34px;
+            content:
+                "";
 
-            width: 125px;
-            height: 125px;
+            position:
+                absolute;
 
-            border-radius: 50%;
+            right:
+                40px;
+
+            top:
+                35px;
+
+            width:
+                125px;
+
+            height:
+                125px;
+
+            border-radius:
+                50%;
 
             background:
                 conic-gradient(
@@ -233,92 +310,133 @@ def apply_theme():
                     #138808 240deg 360deg
                 );
 
-            opacity: 0.16;
-
-            box-shadow:
-                inset 0 0 0 2px rgba(255,255,255,0.25);
+            opacity:
+                0.15;
         }
 
 
-        /* Ashoka Chakra-style centre */
         .hero:before {
-            content: "✺";
 
-            position: absolute;
+            content:
+                "✺";
 
-            right: 77px;
-            top: 59px;
+            position:
+                absolute;
 
-            z-index: 2;
+            right:
+                79px;
 
-            width: 48px;
-            height: 48px;
+            top:
+                74px;
 
-            display: grid;
-            place-items: center;
+            z-index:
+                2;
 
-            border-radius: 50%;
+            width:
+                43px;
 
-            color: rgba(255,255,255,0.55);
+            height:
+                43px;
 
-            font-size: 24px;
-            font-weight: 700;
+            display:
+                grid;
+
+            place-items:
+                center;
+
+            border-radius:
+                50%;
 
             border:
                 2px solid
                 rgba(255,255,255,0.30);
+
+            color:
+                rgba(255,255,255,0.55);
+
+            font-size:
+                22px;
         }
 
 
         .hero-kicker {
-            position: relative;
-            z-index: 3;
 
-            color: #d8e8f7;
+            position:
+                relative;
 
-            font-size: 12px;
+            z-index:
+                3;
 
-            text-transform: uppercase;
+            color:
+                #dceafa;
 
-            letter-spacing: 1.7px;
+            font-size:
+                12px;
 
-            margin-bottom: 8px;
+            text-transform:
+                uppercase;
+
+            letter-spacing:
+                1.6px;
+
+            margin-bottom:
+                8px;
         }
 
 
         .hero-title {
-            position: relative;
-            z-index: 3;
 
-            color: #ffffff;
+            position:
+                relative;
 
-            font-size: 43px;
+            z-index:
+                3;
 
-            line-height: 1.08;
+            color:
+                #ffffff;
 
-            font-weight: 800;
+            font-size:
+                43px;
 
-            margin: 0;
+            line-height:
+                1.08;
 
-            max-width: 800px;
+            font-weight:
+                800;
+
+            margin:
+                0;
+
+            max-width:
+                800px;
         }
 
+
         .hero-title span {
-            color: #f0c45c;
+            color:
+                #f0c45c;
         }
 
 
         .hero-subtitle {
-            position: relative;
-            z-index: 3;
 
-            margin-top: 11px;
+            position:
+                relative;
 
-            color: #eef6ff;
+            z-index:
+                3;
 
-            font-size: 17px;
+            color:
+                #edf6ff;
 
-            max-width: 750px;
+            font-size:
+                17px;
+
+            margin-top:
+                11px;
+
+            max-width:
+                760px;
         }
 
 
@@ -327,34 +445,44 @@ def apply_theme():
         ===================================================== */
 
         .hero-badges {
-            position: relative;
-            z-index: 3;
 
-            display: flex;
+            position:
+                relative;
 
-            gap: 10px;
+            z-index:
+                3;
 
-            margin-top: 20px;
+            display:
+                flex;
 
-            flex-wrap: wrap;
+            flex-wrap:
+                wrap;
+
+            gap:
+                10px;
+
+            margin-top:
+                20px;
         }
 
 
         .hero-badge {
+
+            color:
+                #ffffff;
+
             background:
                 rgba(255,255,255,0.10);
 
             border:
                 1px solid
-                rgba(255,255,255,0.17);
-
-            color: #ffffff;
-
-            padding:
-                8px 13px;
+                rgba(255,255,255,0.16);
 
             border-radius:
                 999px;
+
+            padding:
+                8px 13px;
 
             font-size:
                 12px;
@@ -365,69 +493,88 @@ def apply_theme():
 
 
         /* =====================================================
-           SECTION CARD
+           WHITE SECTION CARD
         ===================================================== */
 
         .section-card {
-            background: #ffffff;
+
+            background:
+                #ffffff;
 
             border:
                 1px solid
-                var(--line);
+                var(--border);
 
-            border-radius: 18px;
+            border-radius:
+                18px;
 
-            padding: 23px;
+            padding:
+                23px;
 
-            margin-bottom: 18px;
+            margin-bottom:
+                18px;
 
             box-shadow:
-                0 8px 25px
-                rgba(15,40,70,0.06);
+                0 8px 26px
+                rgba(20,49,80,0.06);
 
-            color: var(--ink) !important;
+            color:
+                var(--text) !important;
         }
 
 
-        /* FORCE ALL CARD TEXT TO BE DARK */
-
         .section-card,
         .section-card p,
-        .section-card span,
         .section-card div,
+        .section-card span,
         .section-card li,
         .section-card ul,
         .section-card ol {
-            color: var(--ink) !important;
+
+            color:
+                var(--text) !important;
         }
 
 
         .section-card li {
-            margin-bottom: 8px;
 
-            line-height: 1.65;
+            margin-bottom:
+                8px;
+
+            line-height:
+                1.65;
         }
 
 
         .section-title {
-            color: var(--ink) !important;
 
-            font-size: 22px;
+            color:
+                var(--text) !important;
 
-            font-weight: 800;
+            font-size:
+                22px;
 
-            margin-bottom: 5px;
+            font-weight:
+                800;
+
+            margin-bottom:
+                5px;
         }
 
 
         .section-subtitle {
-            color: var(--muted) !important;
 
-            font-size: 13px;
+            color:
+                var(--text-light) !important;
 
-            margin-bottom: 14px;
+            font-size:
+                13px;
 
-            line-height: 1.55;
+            line-height:
+                1.55;
+
+            margin-bottom:
+                14px;
         }
 
 
@@ -436,30 +583,36 @@ def apply_theme():
         ===================================================== */
 
         .metric-card {
-            background: #ffffff;
+
+            background:
+                #ffffff;
 
             border:
                 1px solid
-                var(--line);
+                var(--border);
 
-            border-radius: 16px;
+            border-radius:
+                16px;
 
-            padding: 19px;
+            padding:
+                19px;
 
-            min-height: 120px;
+            min-height:
+                120px;
 
             box-shadow:
                 0 8px 22px
-                rgba(15,40,70,0.05);
-
-            color: var(--ink);
+                rgba(20,49,80,0.05);
         }
 
 
         .metric-label {
-            color: var(--muted) !important;
 
-            font-size: 11px;
+            color:
+                var(--text-light) !important;
+
+            font-size:
+                11px;
 
             text-transform:
                 uppercase;
@@ -470,22 +623,31 @@ def apply_theme():
 
 
         .metric-value {
-            color: var(--ink) !important;
 
-            font-size: 28px;
+            color:
+                var(--text) !important;
 
-            font-weight: 800;
+            font-size:
+                28px;
 
-            margin-top: 6px;
+            font-weight:
+                800;
+
+            margin-top:
+                6px;
         }
 
 
         .metric-note {
-            color: var(--muted) !important;
 
-            font-size: 12px;
+            color:
+                var(--text-light) !important;
 
-            margin-top: 3px;
+            font-size:
+                12px;
+
+            margin-top:
+                3px;
         }
 
 
@@ -494,16 +656,17 @@ def apply_theme():
         ===================================================== */
 
         .approval-card {
+
             background:
                 linear-gradient(
                     135deg,
-                    #e8f8ef 0%,
-                    #f8fffb 100%
+                    #eaf8f0,
+                    #f9fffb
                 );
 
             border:
                 1px solid
-                #b9e2ca;
+                #b7dfc9;
 
             border-radius:
                 18px;
@@ -511,22 +674,21 @@ def apply_theme():
             padding:
                 23px;
 
-            margin-bottom:
-                16px;
-
             color:
-                #24543c !important;
+                #20543b !important;
         }
 
 
         .approval-card * {
-            color: #24543c !important;
+            color:
+                #20543b !important;
         }
 
 
         .approval-title {
+
             color:
-                #0f7446 !important;
+                #087747 !important;
 
             font-size:
                 28px;
@@ -541,16 +703,17 @@ def apply_theme():
         ===================================================== */
 
         .rejection-card {
+
             background:
                 linear-gradient(
                     135deg,
-                    #fff0f2 0%,
-                    #fff9fa 100%
+                    #fff0f2,
+                    #fff9fa
                 );
 
             border:
                 1px solid
-                #edc0c7;
+                #ecc1c8;
 
             border-radius:
                 18px;
@@ -558,23 +721,21 @@ def apply_theme():
             padding:
                 23px;
 
-            margin-bottom:
-                16px;
-
             color:
-                #65404a !important;
+                #633e48 !important;
         }
 
 
         .rejection-card * {
             color:
-                #65404a !important;
+                #633e48 !important;
         }
 
 
         .rejection-title {
+
             color:
-                #a22739 !important;
+                #a4273b !important;
 
             font-size:
                 28px;
@@ -585,20 +746,21 @@ def apply_theme():
 
 
         /* =====================================================
-           AI CARD
+           AI EXPLANATION
         ===================================================== */
 
         .ai-card {
+
             background:
                 linear-gradient(
                     135deg,
-                    #f3efff 0%,
-                    #fbfaff 100%
+                    #f2eeff,
+                    #fbfaff
                 );
 
             border:
                 1px solid
-                #ddd3ff;
+                #ddd2ff;
 
             border-radius:
                 18px;
@@ -610,27 +772,30 @@ def apply_theme():
                 1.75;
 
             color:
-                #27365e !important;
+                #2c3b65 !important;
         }
 
 
+        .ai-card *,
         .ai-card p,
         .ai-card div,
         .ai-card span {
+
             color:
-                #27365e !important;
+                #2c3b65 !important;
         }
 
 
         .ai-label {
+
             display:
                 inline-block;
 
             background:
-                #e9e1ff;
+                #eae2ff;
 
             color:
-                #5b3db0 !important;
+                #5d3bb1 !important;
 
             border-radius:
                 999px;
@@ -660,14 +825,12 @@ def apply_theme():
         ===================================================== */
 
         .workflow {
+
             display:
                 flex;
 
             gap:
                 14px;
-
-            align-items:
-                stretch;
 
             flex-wrap:
                 wrap;
@@ -675,6 +838,7 @@ def apply_theme():
 
 
         .workflow-step {
+
             flex:
                 1 1 180px;
 
@@ -683,7 +847,7 @@ def apply_theme():
 
             border:
                 1px solid
-                var(--line);
+                var(--border);
 
             border-radius:
                 16px;
@@ -693,25 +857,26 @@ def apply_theme():
 
             box-shadow:
                 0 5px 16px
-                rgba(15,40,70,0.04);
+                rgba(20,49,80,0.04);
         }
 
 
         .workflow-num {
+
             width:
                 34px;
 
             height:
                 34px;
 
+            border-radius:
+                50%;
+
             display:
                 grid;
 
             place-items:
                 center;
-
-            border-radius:
-                50%;
 
             background:
                 var(--blue);
@@ -728,17 +893,19 @@ def apply_theme():
 
 
         .workflow-title {
-            font-weight:
-                800;
 
             color:
-                var(--ink) !important;
+                var(--text) !important;
+
+            font-weight:
+                800;
         }
 
 
         .workflow-text {
+
             color:
-                var(--muted) !important;
+                var(--text-light) !important;
 
             font-size:
                 12px;
@@ -752,91 +919,50 @@ def apply_theme():
 
 
         /* =====================================================
-           FOOTER
-        ===================================================== */
-
-        .footer-card {
-            background:
-                linear-gradient(
-                    90deg,
-                    #082746,
-                    #0d3b66
-                );
-
-            color:
-                #dbe8f5 !important;
-
-            border-radius:
-                16px;
-
-            padding:
-                18px 20px;
-
-            margin-top:
-                22px;
-
-            font-size:
-                12px;
-
-            line-height:
-                1.6;
-        }
-
-
-        .footer-card * {
-            color:
-                #dbe8f5 !important;
-        }
-
-
-        /* =====================================================
            INPUT FIELDS
         ===================================================== */
 
-        div[data-baseweb="input"] > div,
-        div[data-baseweb="select"] > div,
-        div[data-baseweb="textarea"] > div {
-            background:
-                #ffffff;
-
-            border-radius:
-                10px;
-
-            border:
-                1px solid
-                #c8d6e5;
-
-            color:
-                var(--ink);
-        }
-
-
-        div[data-baseweb="input"] input,
-        div[data-baseweb="textarea"] textarea {
-            color:
-                var(--ink) !important;
-
-            background:
-                #ffffff !important;
-        }
-
-
         label {
+
             color:
-                var(--ink) !important;
+                var(--text) !important;
 
             font-weight:
                 600;
         }
 
 
-        /* =====================================================
-           SELECTBOX TEXT
-        ===================================================== */
+        div[data-baseweb="input"] > div,
+        div[data-baseweb="select"] > div,
+        div[data-baseweb="textarea"] > div {
+
+            background:
+                #ffffff;
+
+            border:
+                1px solid
+                #c9d7e5;
+
+            border-radius:
+                10px;
+        }
+
+
+        div[data-baseweb="input"] input,
+        div[data-baseweb="textarea"] textarea {
+
+            background:
+                #ffffff !important;
+
+            color:
+                var(--text) !important;
+        }
+
 
         div[data-baseweb="select"] * {
+
             color:
-                var(--ink) !important;
+                var(--text) !important;
         }
 
 
@@ -845,6 +971,7 @@ def apply_theme():
         ===================================================== */
 
         .stButton > button {
+
             border-radius:
                 11px;
 
@@ -856,25 +983,17 @@ def apply_theme():
 
             border:
                 1px solid
-                #cbd9e7;
-        }
-
-
-        .stButton > button:hover {
-            border-color:
-                var(--blue);
-
-            transform:
-                translateY(-1px);
+                #cad9e7;
         }
 
 
         div.stButton > button[kind="primary"] {
+
             background:
                 linear-gradient(
                     90deg,
-                    #0f56b3,
-                    #1d73c9
+                    #145db5,
+                    #2378c9
                 );
 
             color:
@@ -886,11 +1005,12 @@ def apply_theme():
 
 
         div.stButton > button[kind="primary"]:hover {
+
             background:
                 linear-gradient(
                     90deg,
-                    #0d4ca0,
-                    #1767b8
+                    #0e4fa0,
+                    #1c69b4
                 );
         }
 
@@ -900,12 +1020,13 @@ def apply_theme():
         ===================================================== */
 
         [data-testid="stExpander"] {
+
             background:
                 #ffffff;
 
             border:
                 1px solid
-                var(--line);
+                var(--border);
 
             border-radius:
                 14px;
@@ -913,8 +1034,9 @@ def apply_theme():
 
 
         [data-testid="stExpander"] summary {
+
             color:
-                var(--ink) !important;
+                var(--text) !important;
 
             font-weight:
                 700;
@@ -926,8 +1048,9 @@ def apply_theme():
         ===================================================== */
 
         button[data-baseweb="tab"] {
+
             color:
-                var(--muted) !important;
+                var(--text-light) !important;
 
             font-weight:
                 700;
@@ -935,6 +1058,7 @@ def apply_theme():
 
 
         button[data-baseweb="tab"][aria-selected="true"] {
+
             color:
                 var(--blue) !important;
         }
@@ -945,21 +1069,12 @@ def apply_theme():
         ===================================================== */
 
         [data-testid="stDataFrame"] {
+
             border-radius:
                 12px;
 
             overflow:
                 hidden;
-        }
-
-
-        /* =====================================================
-           ALERTS
-        ===================================================== */
-
-        [data-testid="stAlert"] {
-            border-radius:
-                12px;
         }
 
 
@@ -970,21 +1085,28 @@ def apply_theme():
         @media (max-width: 900px) {
 
             .hero {
+
                 padding:
-                    27px 24px;
+                    28px 23px;
             }
 
+
             .hero-title {
+
                 font-size:
                     32px;
             }
 
+
             .hero-subtitle {
+
                 font-size:
                     15px;
             }
 
+
             .hero:after {
+
                 width:
                     90px;
 
@@ -992,69 +1114,82 @@ def apply_theme():
                     90px;
 
                 right:
-                    15px;
+                    14px;
 
                 top:
-                    28px;
+                    30px;
             }
 
+
             .hero:before {
+
                 right:
-                    36px;
+                    37px;
 
                 top:
-                    49px;
+                    55px;
             }
         }
 
         </style>
-        """,
-        unsafe_allow_html=True,
+        """),
+        unsafe_allow_html=True
     )
 
+
+# ==========================================================
+# SIDEBAR BRAND
+# ==========================================================
 
 def sidebar_brand():
 
+    html = """
+<div class="bank-brand">
+
+    <div class="logo">
+        🏛️
+    </div>
+
+    <div class="name">
+        Bharat Loan AI
+    </div>
+
+    <div class="tagline">
+        Indian Banking-Style ML Project
+    </div>
+
+    <div class="tricolor"></div>
+
+</div>
+"""
+
     st.sidebar.markdown(
-        """
-        <div class="bank-brand">
-
-            <div class="logo">
-                🏛️
-            </div>
-
-            <div class="name">
-                Bharat Loan AI
-            </div>
-
-            <div class="tagline">
-                Indian Banking-Style ML Project
-            </div>
-
-            <div class="tricolor"></div>
-
-        </div>
-        """,
-        unsafe_allow_html=True,
+        textwrap.dedent(html),
+        unsafe_allow_html=True
     )
 
+
+# ==========================================================
+# HERO SECTION
+# ==========================================================
 
 def hero(
     title="Loan Approval Prediction",
     subtitle="Data-driven decisions for a smarter tomorrow"
 ):
 
+    # Highlight "Prediction"
     if "Prediction" in title:
 
-        first_part, second_part = title.split(
+        parts = title.split(
             "Prediction",
             1
         )
 
         title_html = (
-            f"{first_part}"
-            f"<span>Prediction</span>"
-            f"{second_part}"
+            parts[0]
+            + "<span>Prediction</span>"
+            + parts[1]
         )
 
     else:
@@ -1062,43 +1197,419 @@ def hero(
         title_html = title
 
 
-    st.markdown(
-        f"""
-        <div class="hero">
+    html = f"""
+<div class="hero">
 
-            <div class="hero-kicker">
-                🇮🇳 Empowering a digitally enabled India
-            </div>
+    <div class="hero-kicker">
+        🇮🇳 Empowering a digitally enabled India
+    </div>
 
-            <div class="hero-title">
-                {title_html}
-            </div>
+    <div class="hero-title">
+        {title_html}
+    </div>
 
-            <div class="hero-subtitle">
-                {subtitle}
-            </div>
+    <div class="hero-subtitle">
+        {subtitle}
+    </div>
 
-            <div class="hero-badges">
+    <div class="hero-badges">
 
-                <div class="hero-badge">
-                    ⚡ Faster Insights
-                </div>
-
-                <div class="hero-badge">
-                    🛡️ Explainable ML
-                </div>
-
-                <div class="hero-badge">
-                    📊 Ensemble Learning
-                </div>
-
-                <div class="hero-badge">
-                    🤖 Gemini AI Explanation
-                </div>
-
-            </div>
-
+        <div class="hero-badge">
+            ⚡ Faster Insights
         </div>
-        """,
-        unsafe_allow_html=True,
+
+        <div class="hero-badge">
+            🛡️ Explainable ML
+        </div>
+
+        <div class="hero-badge">
+            📊 Ensemble Learning
+        </div>
+
+        <div class="hero-badge">
+            🤖 Gemini AI Explanation
+        </div>
+
+    </div>
+
+</div>
+"""
+
+    st.markdown(
+        textwrap.dedent(html),
+        unsafe_allow_html=True
+    )
+
+
+# ==========================================================
+# SECTION CARD
+# ==========================================================
+
+def section_card(
+    title,
+    text="",
+    items=None
+):
+
+    items_html = ""
+
+    if items:
+
+        items_html = "<ul>"
+
+        for item in items:
+
+            items_html += (
+                f"<li>{item}</li>"
+            )
+
+        items_html += "</ul>"
+
+
+    html = f"""
+<div class="section-card">
+
+    <div class="section-title">
+        {title}
+    </div>
+
+    <div class="section-subtitle">
+        {text}
+    </div>
+
+    {items_html}
+
+</div>
+"""
+
+    st.markdown(
+        textwrap.dedent(html),
+        unsafe_allow_html=True
+    )
+
+
+# ==========================================================
+# METRIC CARD
+# ==========================================================
+
+def metric_card(
+    label,
+    value,
+    note=""
+):
+
+    html = f"""
+<div class="metric-card">
+
+    <div class="metric-label">
+        {label}
+    </div>
+
+    <div class="metric-value">
+        {value}
+    </div>
+
+    <div class="metric-note">
+        {note}
+    </div>
+
+</div>
+"""
+
+    st.markdown(
+        textwrap.dedent(html),
+        unsafe_allow_html=True
+    )
+
+
+# ==========================================================
+# APPROVAL CARD
+# ==========================================================
+
+def approval_card(
+    probability,
+    risk
+):
+
+    html = f"""
+<div class="approval-card">
+
+    <div style="font-size:42px;">
+        ✓
+    </div>
+
+    <div class="approval-title">
+        Loan Approved
+    </div>
+
+    <div style="margin-top:6px;">
+        The model predicts that this loan application
+        is likely to be approved.
+    </div>
+
+    <div style="
+        display:flex;
+        gap:30px;
+        margin-top:18px;
+        flex-wrap:wrap;
+    ">
+
+        <div>
+            <strong>
+                {probability:.1f}%
+            </strong>
+            <br>
+            Approval Probability
+        </div>
+
+        <div>
+            <strong>
+                {risk}
+            </strong>
+            <br>
+            Risk Level
+        </div>
+
+    </div>
+
+</div>
+"""
+
+    st.markdown(
+        textwrap.dedent(html),
+        unsafe_allow_html=True
+    )
+
+
+# ==========================================================
+# REJECTION CARD
+# ==========================================================
+
+def rejection_card(
+    probability,
+    risk
+):
+
+    html = f"""
+<div class="rejection-card">
+
+    <div style="font-size:42px;">
+        ✕
+    </div>
+
+    <div class="rejection-title">
+        Loan Rejected
+    </div>
+
+    <div style="margin-top:6px;">
+        The model predicts that this loan application
+        is unlikely to be approved.
+    </div>
+
+    <div style="
+        display:flex;
+        gap:30px;
+        margin-top:18px;
+        flex-wrap:wrap;
+    ">
+
+        <div>
+            <strong>
+                {probability:.1f}%
+            </strong>
+            <br>
+            Approval Probability
+        </div>
+
+        <div>
+            <strong>
+                {risk}
+            </strong>
+            <br>
+            Risk Level
+        </div>
+
+    </div>
+
+</div>
+"""
+
+    st.markdown(
+        textwrap.dedent(html),
+        unsafe_allow_html=True
+    )
+
+
+# ==========================================================
+# AI EXPLANATION CARD
+# ==========================================================
+
+def ai_card(
+    explanation
+):
+
+    html = f"""
+<div class="ai-card">
+
+    <div class="ai-label">
+        Gemini AI Explanation
+    </div>
+
+    <div style="
+        font-size:20px;
+        font-weight:800;
+        margin-bottom:12px;
+    ">
+        🤖 Explanation of This Prediction
+    </div>
+
+    <div>
+        {explanation}
+    </div>
+
+</div>
+"""
+
+    st.markdown(
+        textwrap.dedent(html),
+        unsafe_allow_html=True
+    )
+
+
+# ==========================================================
+# WORKFLOW
+# ==========================================================
+
+def workflow():
+
+    html = """
+<div class="workflow">
+
+    <div class="workflow-step">
+
+        <div class="workflow-num">
+            1
+        </div>
+
+        <div class="workflow-title">
+            Input
+        </div>
+
+        <div class="workflow-text">
+            Applicant details are entered into
+            the application.
+        </div>
+
+    </div>
+
+
+    <div class="workflow-step">
+
+        <div class="workflow-num">
+            2
+        </div>
+
+        <div class="workflow-title">
+            Preprocessing
+        </div>
+
+        <div class="workflow-text">
+            Numerical and categorical data are
+            prepared using the training pipeline.
+        </div>
+
+    </div>
+
+
+    <div class="workflow-step">
+
+        <div class="workflow-num">
+            3
+        </div>
+
+        <div class="workflow-title">
+            ML Prediction
+        </div>
+
+        <div class="workflow-text">
+            The trained ensemble model calculates
+            the loan approval probability.
+        </div>
+
+    </div>
+
+
+    <div class="workflow-step">
+
+        <div class="workflow-num">
+            4
+        </div>
+
+        <div class="workflow-title">
+            AI Explanation
+        </div>
+
+        <div class="workflow-text">
+            Gemini converts the model result into
+            a simple human-readable explanation.
+        </div>
+
+    </div>
+
+</div>
+"""
+
+    st.markdown(
+        textwrap.dedent(html),
+        unsafe_allow_html=True
+    )
+
+
+# ==========================================================
+# FOOTER
+# ==========================================================
+
+def footer():
+
+    html = """
+<div class="footer-card">
+
+    <div style="
+        display:flex;
+        justify-content:space-between;
+        gap:20px;
+        flex-wrap:wrap;
+    ">
+
+        <div>
+            <strong>
+                🇮🇳 Bharat Loan AI
+            </strong>
+            <br>
+            A Machine Learning Project
+        </div>
+
+        <div>
+            Developed by
+            <strong>
+                Ashutosh Paltasingh
+            </strong>
+            <br>
+            B.Tech CSE (AIML)
+        </div>
+
+        <div>
+            Loan Approval Prediction
+            <br>
+            Bagging vs Boosting
+        </div>
+
+    </div>
+
+</div>
+"""
+
+    st.markdown(
+        textwrap.dedent(html),
+        unsafe_allow_html=True
     )
