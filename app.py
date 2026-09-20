@@ -2,13 +2,13 @@ import streamlit as st
 from utils import load_repository_dataset, show_dataset_expander
 from ui_theme import apply_theme, sidebar_brand, hero
 
-st.set_page_config(
-    page_title="Bharat Loan AI",
-    page_icon="🇮🇳",
-    layout="wide",
-    initial_sidebar_state="expanded",
-)
+apply_theme()
+sidebar_brand()
 
+hero(
+    "Loan Approval Prediction",
+    "Data-driven decisions for a smarter tomorrow"
+)
 apply_theme()
 sidebar_brand()
 
