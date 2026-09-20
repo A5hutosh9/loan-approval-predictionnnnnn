@@ -8,6 +8,58 @@ from google.genai import types
 
 from ui_theme import apply_theme, sidebar_brand, hero
 
+
+GEMINI_MODELS = ("gemini-3.8-flash", "gemini-2.5-flash")
+
+
+def generate_ai_explanation(api_key, prompt):
+    """Use a capacity fallback so a busy Gemini model does not break the page."""
+    client = genai.Client(api_key=api_key.strip())
+    failures = []
+
+    for model_name in GEMINI_MODELS:
+        try:
+            response = client.models.generate_content(
+                model=model_name,
+                contents=prompt,
+                config=types.GenerateContentConfig(
+                    temperature=0.3,
+                    max_output_tokens=220,
+                ),
+            )
+            explanation = getattr(response, "text", None)
+            if explanation and explanation.strip():
+                return explanation.strip()
+            failures.append(f"{model_name} returned no text")
+        except Exception as error:
+            failures.append(f"{model_name}: {error}")
+
+    raise RuntimeError(" | ".join(failures))
+
+
+def local_prediction_explanation(
+    prediction_text,
+    approval_probability,
+    risk,
+    cibil_score,
+    income_annum,
+    loan_amount,
+):
+    """Provide a useful academic explanation when Gemini is temporarily unavailable."""
+    return f"""
+**Academic prediction summary:** the trained ensemble model returned **{prediction_text}**
+with an approval probability of **{approval_probability * 100:.1f}%** and a
+**{risk}** classification.
+
+This percentage represents the model's confidence from patterns in its training
+data; it is not a real bank decision. The model evaluated the supplied applicant
+details together, including the CIBIL score ({cibil_score}), annual income
+(₹{income_annum:,}), requested loan amount (₹{loan_amount:,}), employment,
+education, and declared assets. The workflow is: applicant input → preprocessing
+→ trained ensemble model → probability → predicted result.
+""".strip()
+
+
 st.set_page_config(
     page_title="Loan Prediction | Bharat Loan AI",
     page_icon="🔮",
@@ -147,18 +199,22 @@ Clearly state that this is an academic ML prediction, not an actual bank decisio
 """
             try:
                 with st.spinner("Generating AI explanation..."):
-                    client = genai.Client(api_key=gemini_api_key.strip())
-                    response = client.models.generate_content(
-                        model="gemini-3.8-flash",
-                        contents=prompt,
-                        config=types.GenerateContentConfig(
-                            temperature=0.3,
-                            max_output_tokens=220,
-                        ),
+                    explanation = generate_ai_explanation(gemini_api_key, prompt)
+                st.write(explanation)
+            except Exception:
+                st.caption(
+                    "Gemini is temporarily busy, so a reliable local explanation is shown instead."
+                )
+                st.write(
+                    local_prediction_explanation(
+                        prediction_text,
+                        approval_probability,
+                        risk,
+                        cibil_score,
+                        income_annum,
+                        loan_amount,
                     )
-                st.write(response.text)
-            except Exception as e:
-                st.error(f"AI explanation could not be generated: {e}")
+                )
 
         st.markdown("</div>", unsafe_allow_html=True)
 
