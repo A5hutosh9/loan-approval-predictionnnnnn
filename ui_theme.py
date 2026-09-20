@@ -1146,6 +1146,146 @@ def apply_theme():
             }
         }
 
+
+        /* =====================================================
+           DARK MODE OVERRIDES
+        ===================================================== */
+
+        :root {
+            --navy: #06182b;
+            --navy-light: #0d355c;
+            --blue: #3c8ee6;
+            --blue-light: #6aaef2;
+            --background: #081522;
+            --text: #e8f1fb;
+            --text-light: #aec2d8;
+            --border: #29445f;
+        }
+
+        .stApp {
+            background: linear-gradient(180deg, #081522 0%, #0a1b2c 55%, #07131f 100%);
+            color: var(--text);
+        }
+
+        [data-testid="stHeader"] {
+            background: rgba(8, 21, 34, 0.96);
+            border-bottom: 1px solid #29445f;
+        }
+
+        [data-testid="stSidebar"] {
+            background: linear-gradient(180deg, #04101d 0%, #08233d 52%, #061625 100%);
+        }
+
+        .section-card,
+        .metric-card,
+        .workflow-step,
+        [data-testid="stExpander"] {
+            background: #10243a !important;
+            border-color: #29445f !important;
+            box-shadow: 0 8px 26px rgba(0, 0, 0, 0.24);
+        }
+
+        .section-card,
+        .section-card p,
+        .section-card div,
+        .section-card span,
+        .section-card li,
+        .section-card ul,
+        .section-card ol,
+        .section-title,
+        .metric-value,
+        .workflow-title {
+            color: #eef6ff !important;
+        }
+
+        .section-subtitle,
+        .metric-label,
+        .metric-note,
+        .workflow-text {
+            color: #aec2d8 !important;
+        }
+
+        .approval-card {
+            background: #0d3328 !important;
+            border-color: #2a9d70 !important;
+            color: #e8fff5 !important;
+        }
+
+        .rejection-card {
+            background: #3a1b28 !important;
+            border-color: #d95a7a !important;
+            color: #ffeef3 !important;
+        }
+
+        .ai-card {
+            background: #202247 !important;
+            border-color: #7268d9 !important;
+            color: #f2f0ff !important;
+        }
+
+        .ai-label {
+            background: #3a367a !important;
+            color: #ffffff !important;
+        }
+
+        label,
+        [data-testid="stWidgetLabel"] p {
+            color: #e8f1fb !important;
+        }
+
+        [data-testid="stNumberInputContainer"],
+        .react-aria-ComboBox [role="group"] {
+            background: #0b1b2d !important;
+            border-color: #3c8ee6 !important;
+        }
+
+        [data-testid="stNumberInputField"],
+        .react-aria-ComboBox input[role="combobox"],
+        [data-testid="stNumberInputStepUp"],
+        [data-testid="stNumberInputStepDown"],
+        .react-aria-ComboBox button[aria-haspopup="listbox"] {
+            color: #eef6ff !important;
+        }
+
+        [data-testid="stNumberInputStepUp"],
+        [data-testid="stNumberInputStepDown"],
+        .react-aria-ComboBox button[aria-haspopup="listbox"] {
+            background: #173a5e !important;
+            border-color: #3c8ee6 !important;
+        }
+
+        .stButton > button {
+            background: #173a5e !important;
+            border-color: #4b9df0 !important;
+            color: #f4f9ff !important;
+        }
+
+        .stButton > button:hover {
+            background: #24517f !important;
+            border-color: #79b9f6 !important;
+        }
+
+        div.stButton > button[kind="primary"] {
+            background: linear-gradient(90deg, #1261b8, #3c8ee6) !important;
+            border-color: #6aaef2 !important;
+            color: #ffffff !important;
+        }
+
+        [data-testid="stAlert"] {
+            background: #122c45 !important;
+            color: #e8f1fb !important;
+            border-color: #315d88 !important;
+        }
+
+        button[data-baseweb="tab"],
+        button[data-baseweb="tab"][aria-selected="true"] {
+            color: #d9eaff !important;
+        }
+
+        [data-testid="stDataFrame"] {
+            border: 1px solid #29445f;
+        }
+
         </style>
         """),
         unsafe_allow_html=True
