@@ -1693,7 +1693,7 @@ def footer():
         <div>
             Developed by
             <strong>
-                Ashutosh Paltasingh
+                Group-10
             </strong>
             <br>
             B.Tech CSE (AIML)
