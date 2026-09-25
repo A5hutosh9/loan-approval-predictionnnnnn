@@ -8,7 +8,7 @@ sidebar_brand()
 st.sidebar.markdown("### Navigation")
 st.sidebar.caption("Academic ML project • not a real bank")
 st.sidebar.markdown("---")
-st.sidebar.markdown("<div style='color:#f0c45c;font-weight:700;'>By- Ashutosh Paltasingh</div>", unsafe_allow_html=True)
+st.sidebar.markdown("<div style='color:#f0c45c;font-weight:700;'>By- Group 10</div>", unsafe_allow_html=True)
 
 hero("Bharat Loan AI", "Project dashboard · Loan approval prediction with ensemble learning")
 st.caption("HOME · PROJECT OVERVIEW")
