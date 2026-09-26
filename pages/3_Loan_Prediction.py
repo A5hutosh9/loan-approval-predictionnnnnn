@@ -1,4 +1,5 @@
 import os
+import time
 
 import joblib
 import pandas as pd
@@ -9,15 +10,41 @@ from google.genai import types
 from ui_theme import apply_theme, sidebar_brand, hero
 
 
-GEMINI_MODELS = ("gemini-3.8-flash", "gemini-2.5-flash")
+GEMINI_MODELS = (
+    "gemini-3.8-flash",
+    "gemini-3.7-flash",
+    "gemini-3.6-flash",
+    "gemini-3.5-flash",
+)
+
+
+def _is_transient_error(error):
+    """Return True for temporary capacity/rate-limit failures."""
+    message = str(error).lower()
+    transient_markers = (
+        "503",
+        "service_unavailable",
+        "service unavailable",
+        "unavailable",
+        "overloaded",
+        "500",
+        "internal server error",
+        "429",
+        "rate_limit_exceeded",
+        "too_many_requests",
+        "408",
+        "deadline_exceeded",
+        "timeout",
+    )
+    return any(marker in message for marker in transient_markers)
 
 
 def generate_ai_explanation(api_key, prompt):
-    """Use a capacity fallback so a busy Gemini model does not break the page."""
+    """Use several supported Flash models so one busy model does not break the page."""
     client = genai.Client(api_key=api_key.strip())
     failures = []
 
-    for model_name in GEMINI_MODELS:
+    for index, model_name in enumerate(GEMINI_MODELS):
         try:
             response = client.models.generate_content(
                 model=model_name,
@@ -30,11 +57,24 @@ def generate_ai_explanation(api_key, prompt):
             explanation = getattr(response, "text", None)
             if explanation and explanation.strip():
                 return explanation.strip()
+
             failures.append(f"{model_name} returned no text")
         except Exception as error:
             failures.append(f"{model_name}: {error}")
 
-    raise RuntimeError(" | ".join(failures))
+            # The Gemini SDK already retries transient failures internally.
+            # Pause briefly before moving to the next supported model.
+            if _is_transient_error(error) and index < len(GEMINI_MODELS) - 1:
+                time.sleep(1.5)
+                continue
+
+            if not _is_transient_error(error):
+                raise
+
+    raise RuntimeError(
+        "All Gemini models were temporarily unavailable. "
+        + " | ".join(failures)
+    )
 
 
 def local_prediction_explanation(
@@ -201,9 +241,10 @@ Clearly state that this is an academic ML prediction, not an actual bank decisio
                 with st.spinner("Generating AI explanation..."):
                     explanation = generate_ai_explanation(gemini_api_key, prompt)
                 st.write(explanation)
-            except Exception:
+            except Exception as error:
                 st.caption(
-                    "Gemini is temporarily busy, so a reliable local explanation is shown instead."
+                    "Gemini is temporarily unavailable. A reliable local explanation is "
+                    "shown instead."
                 )
                 st.write(
                     local_prediction_explanation(
