@@ -1080,16 +1080,42 @@ def apply_theme():
 
 
         /* =====================================================
+           NATIVE STREAMLIT METRICS
+           ===================================================== */
+
+        [data-testid="stMetric"] {
+            color: #eef6ff !important;
+        }
+
+        [data-testid="stMetricLabel"],
+        [data-testid="stMetricLabel"] p,
+        [data-testid="stMetricLabel"] div {
+            color: #aec2d8 !important;
+            font-weight: 700 !important;
+        }
+
+        [data-testid="stMetricValue"],
+        [data-testid="stMetricValue"] div {
+            color: #ffffff !important;
+            font-weight: 800 !important;
+            opacity: 1 !important;
+        }
+
+        [data-testid="stMetricDelta"],
+        [data-testid="stMetricDelta"] div {
+            color: #d9eaff !important;
+            opacity: 1 !important;
+        }
+
+
+        /* =====================================================
            DATAFRAME
-        ===================================================== */
+           ===================================================== */
 
         [data-testid="stDataFrame"] {
-
-            border-radius:
-                12px;
-
-            overflow:
-                hidden;
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid #29445f;
         }
 
 
